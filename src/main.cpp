@@ -2,21 +2,19 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 #include <fstream>
-#include <string>
 
 int main() {
 	const int wWidth = 640;
 	const int wHeight = 480;
 	sf::RenderWindow window(sf::VideoMode(wWidth, wHeight), "SFML Game");
-
 	sf::CircleShape circle(50);
 	circle.setFillColor(sf::Color::Green);
 	circle.setPosition(300, 300);
 
 	sf::Font myFont;
 
-	if (!myFont.loadFromFile("Roboto-Regular.ttf")) {
-		std::cout << "Not found\n";
+	if (!myFont.loadFromFile("bin/Roboto-Regular.ttf")) {
+		std::cout << "Font not found\n";
 	}
 
 	std::ifstream infile;
@@ -24,7 +22,6 @@ int main() {
 	int input;
 	infile >> input;
 	std::cout << input << "\n";
-
 
 	sf::Event e;
 	while (window.isOpen()) {
@@ -41,5 +38,5 @@ int main() {
 		window.display();
 	}
 
-	return 1;
+	return 0;
 }
