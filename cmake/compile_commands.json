@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/ncoxson/Documents/2D-game-engine/cmake",
+  "command": "/usr/bin/c++ -DSOME_DEFINITION   -o CMakeFiles/my_app.dir/src/main.cpp.o -c /home/ncoxson/Documents/2D-game-engine/src/main.cpp",
+  "file": "/home/ncoxson/Documents/2D-game-engine/src/main.cpp"
+}
+]
