@@ -1,5 +1,5 @@
 Window 800 600
-Font fonts/Roboto-Regular.ttf
+Font fonts/RobotoRegular.ttf 18 255 255 255
 Circle CGreen 100 100 -0.03 0.02 0 255 0 50
 Circle CBlue 200 200 0.02 0.04 0 0 255 100
 Circle CPurple 300 300 -0.02 -0.01 255 0 255 75
