@@ -3,9 +3,12 @@
 #include <iostream>
 #include <fstream>
 
+struct CircleEntity {
+    sf::CircleShape circle;
+    sf::Text        label;
+};
+
 int main() {
-
-
 	std::ifstream infile;
 	infile.open("bin/config.txt");
     int         wWidth;
@@ -49,47 +52,48 @@ int main() {
     float       dx, dy;
     std::string name;
     while (infile) {
-        infile >> objectType;
-        if (objectType.compare("Circle") == 0) {
-            infile >> name >> x >> y >> dx >> dy;
-            infile >> red >> green >> blue;
-            infile >> radius;
+        infile >> objectType >> name;
+        infile >> x >> y >> dx >> dy;
+        infile >> red >> green >> blue;
+        
+        // Create color
+        sf::Color color(red, green, blue, 255);
+        
+        // Create label
+        sf::Text label(name, myFont);
+        label.setFillColor(textColor);
+        label.setCharacterSize(fontSize);
+        sf::FloatRect textRect = label.getLocalBounds();
+        label.setOrigin(textRect.left + textRect.width/2.0f,
+                        textRect.top + textRect.height/2.0f);
 
+        if (objectType.compare("Circle") == 0) {
+            infile >> radius;
             sf::CircleShape circle(radius);
-            sf::Color color(red, green, blue, 255);
             circle.setFillColor(color);
             circle.setPosition(x, y);
             circles.push_back(std::make_tuple(circle, dx, dy));
 
-            sf::Text label(name, myFont);
-            label.setFillColor(textColor);
-            label.setCharacterSize(fontSize);
-            sf::FloatRect textRect = label.getLocalBounds();
-            label.setOrigin(textRect.left + textRect.width/2.0f,
-                            textRect.top + textRect.height/2.0f);
+            // Center label
             label.setPosition(x + radius, y + radius);
             labels.push_back(std::make_tuple(label, dx, dy));
         } else if (objectType.compare("Rectangle") == 0) {
-            infile >> name >> x >> y >> dx >> dy;
-            infile >> red >> green >> blue;
             infile >> width >> height;
-
             sf::RectangleShape rectangle(sf::Vector2f(width, height));
-            sf::Color          color(red, green, blue, 255);
             rectangle.setFillColor(color);
             rectangle.setPosition(x, y);
             rectangles.push_back(std::make_tuple(rectangle, dx, dy));
 
-            sf::Text label(name, myFont);
-            label.setFillColor(textColor);
-            label.setCharacterSize(fontSize);
-            sf::FloatRect textRect = label.getLocalBounds();
-            label.setOrigin(textRect.left + textRect.width/2.0f,
-                            textRect.top + textRect.height/2.0f);
-            label.setPosition(x + width/2.0f, y + height/2.0f);
+            // Center label
+            label.setPosition(x + width/2.f, y + height/2.f);
             labels.push_back(std::make_tuple(label, dx, dy));
         }
     }
+    CircleEntity myEntity;
+    myEntity.circle = sf::CircleShape(50);
+    myEntity.label = sf::Text("Test", myFont, fontSize);
+    myEntity.circle.setPosition(200, 200);
+    myEntity.circle.setFillColor(sf::Color::Red);
     
     sf::RenderWindow window(sf::VideoMode(wWidth, wHeight), "SFML Game");
 	sf::Event e;
@@ -102,9 +106,23 @@ int main() {
 
         // Clear previous frame
 		window.clear(sf::Color::Black);
+        
+        window.draw(myEntity.circle);
+
 
         // Drawing
         for (auto &c: circles) {
+            sf::CircleShape circle   = std::get<0>(c);
+            float           &dx      = std::get<1>(c);
+            float           &dy      = std::get<2>(c);
+            sf::FloatRect   bounds   = circle.getGlobalBounds();
+
+            if (bounds.left <= 0 || (bounds.left + bounds.width) >= wWidth) {
+                dx *= -1;
+            } else if (bounds.top <= 0 || (bounds.top + bounds.height >= wHeight)) {
+                dy *= -1;
+            }
+
             std::get<0>(c).move(std::get<1>(c), std::get<2>(c));
             window.draw(std::get<0>(c));
         }
