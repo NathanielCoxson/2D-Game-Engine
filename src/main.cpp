@@ -2,10 +2,25 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
-struct CircleEntity {
-    sf::CircleShape circle;
-    sf::Text        label;
+class Shape {
+
+    public:
+    std::shared_ptr<sf::Shape> shape;
+    std::shared_ptr<sf::Text>  label;
+    float                      dx, dy;
+
+    Shape(
+        std::shared_ptr<sf::Shape> s,
+        std::shared_ptr<sf::Text>  l,
+        float                      sx,
+        float                      sy
+    ): shape(s), label(l), dx(sx), dy(sy) {
+
+    }
+
+
 };
 
 int main() {
@@ -42,15 +57,13 @@ int main() {
     }
 
     // Read shapes
-    std::vector<std::tuple<sf::CircleShape, float, float>>    circles;
-    std::vector<std::tuple<sf::RectangleShape, float, float>> rectangles;
-    std::vector<std::tuple<sf::Text, float, float>>           labels;
-    int         x, y;
-    int         red, green, blue;
-    int         radius;
-    int         width, height;
-    float       dx, dy;
-    std::string name;
+    std::vector<Shape> shapes;
+    int                x, y;
+    int                red, green, blue;
+    int                radius;
+    int                width, height;
+    float              dx, dy;
+    std::string        name;
     while (infile) {
         infile >> objectType >> name;
         infile >> x >> y >> dx >> dy;
@@ -72,28 +85,33 @@ int main() {
             sf::CircleShape circle(radius);
             circle.setFillColor(color);
             circle.setPosition(x, y);
-            circles.push_back(std::make_tuple(circle, dx, dy));
 
             // Center label
             label.setPosition(x + radius, y + radius);
-            labels.push_back(std::make_tuple(label, dx, dy));
+
+            shapes.push_back(Shape(
+                std::make_shared<sf::CircleShape>(circle),
+                std::make_shared<sf::Text>(label),
+                dx,
+                dy
+            ));
         } else if (objectType.compare("Rectangle") == 0) {
             infile >> width >> height;
             sf::RectangleShape rectangle(sf::Vector2f(width, height));
             rectangle.setFillColor(color);
             rectangle.setPosition(x, y);
-            rectangles.push_back(std::make_tuple(rectangle, dx, dy));
 
             // Center label
             label.setPosition(x + width/2.f, y + height/2.f);
-            labels.push_back(std::make_tuple(label, dx, dy));
+
+            shapes.push_back(Shape(
+                std::make_shared<sf::RectangleShape>(rectangle),
+                std::make_shared<sf::Text>(label),
+                dx,
+                dy
+            ));
         }
     }
-    CircleEntity myEntity;
-    myEntity.circle = sf::CircleShape(50);
-    myEntity.label = sf::Text("Test", myFont, fontSize);
-    myEntity.circle.setPosition(200, 200);
-    myEntity.circle.setFillColor(sf::Color::Red);
     
     sf::RenderWindow window(sf::VideoMode(wWidth, wHeight), "SFML Game");
 	sf::Event e;
@@ -107,32 +125,20 @@ int main() {
         // Clear previous frame
 		window.clear(sf::Color::Black);
         
-        window.draw(myEntity.circle);
-
-
         // Drawing
-        for (auto &c: circles) {
-            sf::CircleShape circle   = std::get<0>(c);
-            float           &dx      = std::get<1>(c);
-            float           &dy      = std::get<2>(c);
-            sf::FloatRect   bounds   = circle.getGlobalBounds();
+        for (auto &s: shapes) {
+            sf::FloatRect bounds = (s.shape)->getGlobalBounds();
 
             if (bounds.left <= 0 || (bounds.left + bounds.width) >= wWidth) {
-                dx *= -1;
+                s.dx *= -1;
             } else if (bounds.top <= 0 || (bounds.top + bounds.height >= wHeight)) {
-                dy *= -1;
+                s.dy *= -1;
             }
-
-            std::get<0>(c).move(std::get<1>(c), std::get<2>(c));
-            window.draw(std::get<0>(c));
-        }
-        for (auto &r: rectangles) {
-            std::get<0>(r).move(std::get<1>(r), std::get<2>(r));
-            window.draw(std::get<0>(r));
-        }
-        for (auto &l: labels) {
-            std::get<0>(l).move(std::get<1>(l), std::get<2>(l));
-            window.draw(std::get<0>(l));
+        
+            s.shape->move(s.dx, s.dy);
+            s.label->move(s.dx, s.dy);
+            window.draw(*(s.shape));
+            window.draw(*(s.label));
         }
 
         // Display new frame
