@@ -28,7 +28,9 @@ bool Vec2::operator != (const Vec2& rhs) const {
 }
 
 void Vec2::normalize() {
-
+    double length = this->length();
+    x = x / length;
+    y = y / length;
 }
 
 double Vec2::length() const {
