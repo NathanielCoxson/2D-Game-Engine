@@ -16,9 +16,8 @@ class Shape {
         std::shared_ptr<sf::Text>  l,
         float                      sx,
         float                      sy
-    ): shape(s), label(l), dx(sx), dy(sy) {
-
-    }
+    ): shape(s), label(l), dx(sx), dy(sy) 
+    {}
 
 
 };
