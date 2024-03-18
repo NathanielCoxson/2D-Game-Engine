@@ -53,6 +53,10 @@ void Vec2::normalize() {
     y = y / length;
 }
 
-double Vec2::length() const {
+float Vec2::length() const {
     return std::sqrt((x * x) + (y * y));
+}
+
+float Vec2::dist(const Vec2& rhs) const {
+    return sqrt( pow(x - rhs.x, 2) + pow(y - rhs.y, 2) );
 }

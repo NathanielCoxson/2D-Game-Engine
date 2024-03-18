@@ -1,12 +1,11 @@
-#ifndef VEC2_H
-#define VEC2_H
+#pragma once
 
 class Vec2 {
 
 public:
 
-    double x;
-    double y;
+    float x;
+    float y;
 
     Vec2(float x_in, float y_in);
 
@@ -23,9 +22,9 @@ public:
     bool operator == (const Vec2& rhs) const;
     bool operator != (const Vec2& rhs) const;
 
-    void normalize();
-    double length() const;
+    void  normalize ();
+    float length    ()                const;
+    float dist      (const Vec2& rhs) const;
 
 };
 
-#endif
