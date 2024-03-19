@@ -46,3 +46,24 @@ public:
     float radius = 0;
     CCollision(float r): radius(r) {}
 };
+
+class CLifespan {
+
+public:
+    int remaining = 0; // amount of lifespan remaining
+    int total     = 0; // total initial lifespan
+
+    CLifespan(int t): total(t), remaining(t) {}
+};
+
+class CInput {
+
+public:
+    bool up    = false;
+    bool down  = false;
+    bool left  = false;
+    bool right = false;
+    bool shoot = false;
+
+    CInput() {}
+};
