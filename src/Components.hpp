@@ -31,11 +31,18 @@ public:
             const sf::Color& fill,
             const sf::Color& outline, 
             float            thickness) 
-        : circle(radius, points)
-    {
+        : circle(radius, points) {
+
         circle.setFillColor(fill);
         circle.setOutlineColor(outline);
         circle.setOutlineThickness(thickness);
         circle.setOrigin(radius, radius);
     }
+};
+
+class CCollision {
+
+public:
+    float radius = 0;
+    CCollision(float r): radius(r) {}
 };
