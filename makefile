@@ -6,5 +6,5 @@ build:
 run:
 	./bin/sfmlgame
 test:
-	g++ tests/*.cpp `ls src/*.cpp | grep -v main.cpp` -o bin/test
+	g++ tests/*.cpp `ls src/*.cpp | grep -v main.cpp` -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -o bin/test
 	./bin/test
