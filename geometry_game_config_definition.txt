@@ -1,0 +1,41 @@
+Config file definitions:
+
+Window: W H FL FS
+    W is width
+    H is height
+    FL is frame limit for the window
+    FS 1 for fullscreen 0 for non-fullscreen
+
+Font: F S R G B
+    F is font file
+    S is font size int
+    R G B is RGB color ints
+
+Player: SR CR S FR FG FB OR OG OB OT V
+    SR is shape radius int
+    CR is collision radius int
+    S is speed float
+    FR,FG,FB is fill color RGB ints
+    OR,OG,OB is outline color RBG ints
+    OT is outline thickness int
+    V is shape vertex count int
+
+Enemy: SR CR SMIN SMAX OR OG OB OT VMIN VMAX L SI
+    SR is shape radius int
+    CR is collision radius int
+    SMIN and SMAX are min and max speed floats
+    OR,OG,OB is RBG color ints
+    OT is outline thickness int
+    VMIN and VMAX are min and max vertex count ints
+    L is lifespan of on death small enemies as int
+    SP is spawn interval int
+
+Bullet: SR CR S FR FG FB OR OG OB OT V L
+    SR is shape radius int
+    CR is collision radius int
+    S is speed float
+    FR,FG,FB is fill color RGB ints
+    OR,OG,OB is outline color RGB ints
+    OT is outline thickness int
+    V is number of vertices int
+    L is lifespan
