@@ -92,43 +92,112 @@ void Game::init(const std::string& config) {
     }
 }
 
+void Game::sMovement() {
+    if (m_player->cInput->up) {
+        m_player->cTransform->velocity.y = -1 * m_playerConfig.S;
+    } else {
+        m_player->cTransform->velocity.y = 0;
+    }
+    m_player->cTransform->pos.x += m_player->cTransform->velocity.x;
+    m_player->cTransform->pos.y += m_player->cTransform->velocity.y;
+
+    for (auto e: m_entities.getEntities()) {
+        if (e->cTransform != nullptr) {
+            e->cTransform->pos.x += e->cTransform->velocity.x;            
+            e->cTransform->pos.y += e->cTransform->velocity.y;            
+        }
+    }
+}
+
+void Game::sUserInput() {
+    sf::Event e;
+    while (m_window.pollEvent(e)) {
+        if (e.type == sf::Event::Closed) {
+            m_window.close();
+        }
+
+        if (e.type == sf::Event::KeyPressed) {
+            switch (e.key.code) {
+                case sf::Keyboard::W:
+                    std::cout << "W Key pressed\n";
+                    m_player->cInput->up = true;
+                default:
+                    break;
+            }
+        }
+
+        if (e.type == sf::Event::KeyReleased) {
+            switch (e.key.code) {
+                case sf::Keyboard::W:
+                    std::cout << "W Key released\n";
+                    m_player->cInput->up = false;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+void Game::sRender() {
+    for (auto e: m_entities.getEntities()) {
+        if (e->cTransform != nullptr && e->cShape != nullptr) {
+            e->cShape->circle.setPosition(
+                    e->cTransform->pos.x,
+                    e->cTransform->pos.y
+                    );
+        }
+        if (e->cShape != nullptr) {
+            m_window.draw(e->cShape->circle);
+        }
+    }
+}
+
 void Game::spawnPlayer() {
     m_player = m_entities.addEntity("player");
 
-
-    m_player->cTransform = std::make_shared<CTransform>(Vec2(100, 100), Vec2(0, 0), 0);
+    m_player->cTransform = std::make_shared<CTransform>(
+            Vec2(m_window.getSize().x/2.f, m_window.getSize().y/2.f),
+            Vec2(0, 0),
+            0
+            );
 
     m_player->cCollision = std::make_shared<CCollision>(m_playerConfig.CR);
+
+    m_player->cInput = std::make_shared<CInput>();
 
     m_player->cShape = std::make_shared<CShape>(
             m_playerConfig.SR,
             m_playerConfig.V,
             sf::Color(m_playerConfig.FR, m_playerConfig.FG, m_playerConfig.FB, 255),
             sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB, 255),
-            m_playerConfig.OT);
+            m_playerConfig.OT
+            );
     m_player->cShape->circle.setPosition(
-            m_player->cTransform->pos.x, 
-            m_player->cTransform->pos.y);
+            m_player->cTransform->pos.x,
+            m_player->cTransform->pos.y
+            );
 }
 
 Game::Game(const std::string& config) {
     init(config);
+    spawnPlayer();
 }
 
 void Game::run() {
     sf::Event e;
 
     while (m_window.isOpen()) {
-        while (m_window.pollEvent(e)) {
-            if (e.type == sf::Event::Closed) {
-                m_window.close();
-            }
-        }
+
+        m_entities.update();
 
         // Clear previous frame
 		m_window.clear(sf::Color::Black);
 
-        // Drawing
+        // Systems
+        sMovement();
+        sUserInput();
+        sRender();
+
 
         // Display new frame
         m_window.display();
