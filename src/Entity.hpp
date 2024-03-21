@@ -2,6 +2,7 @@
 
 #include "Components.hpp"
 #include <memory>
+#include <string>
 
 class Entity {
 

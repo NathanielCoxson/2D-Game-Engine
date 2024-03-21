@@ -111,7 +111,8 @@ int main() {
             ));
         }
     }
-    
+
+    int frame_number = 0;
     sf::RenderWindow window(sf::VideoMode(wWidth, wHeight), "SFML Game");
 	sf::Event e;
 	while (window.isOpen()) {
@@ -142,6 +143,7 @@ int main() {
 
         // Display new frame
 		window.display();
+        frame_number++;
 	}
 
 	return 0;
