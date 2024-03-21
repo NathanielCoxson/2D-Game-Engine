@@ -87,3 +87,38 @@ TEST_CASE("Entity manager correctly updates with multiple entity types") {
     CHECK(entityManager.getEntities("test").size() == 1);
     CHECK(entityManager.getEntities("entity").size() == 1);
 }
+
+TEST_CASE("Assigns the correct ids to new entities") {
+    EntityManager entityManager;
+
+    entityManager.addEntity("test");
+    entityManager.update();
+    CHECK(entityManager.getEntities().size() == 1);
+    CHECK(entityManager.getEntities()[0]->id() == 0);
+
+    entityManager.addEntity("test");
+    entityManager.update();
+    CHECK(entityManager.getEntities().size() == 2);
+    CHECK(entityManager.getEntities()[1]->id() == 1);
+
+    entityManager.getEntities()[0]->destroy();
+    entityManager.update();
+    entityManager.addEntity("test");
+    entityManager.update();
+    CHECK(entityManager.getEntities().size() == 2);
+    CHECK(entityManager.getEntities()[1]->id() == 2);
+}
+
+TEST_CASE("Correctly destroys entities") {
+    EntityManager entityManager;
+
+    entityManager.addEntity("test");
+    entityManager.update();
+    CHECK(entityManager.getEntities().size() == 1);
+    CHECK(entityManager.getEntities("test").size() == 1);
+
+    entityManager.getEntities()[0]->destroy();
+    entityManager.update();
+    CHECK(entityManager.getEntities().size() == 0);
+    CHECK(entityManager.getEntities("test").size() == 0);
+}
