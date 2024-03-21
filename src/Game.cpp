@@ -23,6 +23,7 @@ void Game::init(const std::string& config) {
             // Create the window
             if (fullScreen == 0) m_window.create(sf::VideoMode(width, height), title);
             else m_window.create(sf::VideoMode(width, height), "Geometry Battle", sf::Style::Fullscreen);
+            m_window.setFramerateLimit(frameLimit);
         } else if (type.compare("Font") == 0) {
             std::string fontFile;
             int fontSize, FR, FG, FB;
@@ -93,14 +94,26 @@ void Game::init(const std::string& config) {
 }
 
 void Game::sMovement() {
+    // Player velocity updates
+    m_player->cTransform->velocity = { 0.0, 0.0 };
+    // Up input 
     if (m_player->cInput->up) {
         m_player->cTransform->velocity.y = -1 * m_playerConfig.S;
-    } else {
-        m_player->cTransform->velocity.y = 0;
     }
-    m_player->cTransform->pos.x += m_player->cTransform->velocity.x;
-    m_player->cTransform->pos.y += m_player->cTransform->velocity.y;
+    // Down input 
+    if (m_player->cInput->down) {
+        m_player->cTransform->velocity.y = m_playerConfig.S;
+    }
+    // Left input 
+    if (m_player->cInput->left) {
+        m_player->cTransform->velocity.x = -1 * m_playerConfig.S;
+    }
+    // Right input 
+    if (m_player->cInput->right) {
+        m_player->cTransform->velocity.x = m_playerConfig.S;
+    }
 
+    // Entity position updates
     for (auto e: m_entities.getEntities()) {
         if (e->cTransform != nullptr) {
             e->cTransform->pos.x += e->cTransform->velocity.x;            
@@ -121,6 +134,19 @@ void Game::sUserInput() {
                 case sf::Keyboard::W:
                     std::cout << "W Key pressed\n";
                     m_player->cInput->up = true;
+                    break;
+                case sf::Keyboard::A:
+                    std::cout << "A Key pressed\n";
+                    m_player->cInput->left = true;
+                    break;
+                case sf::Keyboard::S:
+                    std::cout << "S Key pressed\n";
+                    m_player->cInput->down = true;
+                    break;
+                case sf::Keyboard::D:
+                    std::cout << "D Key pressed\n";
+                    m_player->cInput->right = true;
+                    break;
                 default:
                     break;
             }
@@ -131,6 +157,19 @@ void Game::sUserInput() {
                 case sf::Keyboard::W:
                     std::cout << "W Key released\n";
                     m_player->cInput->up = false;
+                    break;
+                case sf::Keyboard::A:
+                    std::cout << "A Key released\n";
+                    m_player->cInput->left = false;
+                    break;
+                case sf::Keyboard::S:
+                    std::cout << "S Key released\n";
+                    m_player->cInput->down = false;
+                    break;
+                case sf::Keyboard::D:
+                    std::cout << "D Key released\n";
+                    m_player->cInput->right = false;
+                    break;
                 default:
                     break;
             }
