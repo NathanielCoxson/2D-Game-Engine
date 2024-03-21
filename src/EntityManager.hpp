@@ -8,8 +8,8 @@ class EntityManager {
 
     friend class Entity;
 
-    std::map<std::string, std::vector<std::shared_ptr<Entity>>> m_entityMap;
-    std::vector<std::shared_ptr<Entity>>                        m_entities;
+    std::map<std::string, std::vector<std::shared_ptr<Entity>>> m_entityMap = {};
+    std::vector<std::shared_ptr<Entity>>                        m_entities = {};
     std::vector<std::shared_ptr<Entity>>                        empty = {};
     std::vector<std::shared_ptr<Entity>>                        m_entitiesToAdd;
     int                                                         next_id = 0;
