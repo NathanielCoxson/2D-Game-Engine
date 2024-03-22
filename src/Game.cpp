@@ -1,9 +1,14 @@
 #include "Game.hpp"
 #include "Vec2.hpp"
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <string>
 #include <fstream>
 #include <iostream>
+
+int Game::getRandomInt(int min, int max) {
+    return (min + (rand() % (1 + max - min)));
+}
 
 void Game::init(const std::string& config) {
     srand(time(NULL));
@@ -14,7 +19,7 @@ void Game::init(const std::string& config) {
 
     while (!fin.eof()) {
         fin >> type;
-        std::cout << "Reading: " << type << "\n";
+        //std::cout << "Reading: " << type << "\n";
 
         if (type.compare("Window") == 0) {
             std::string title = "Geometry Battle";
@@ -51,14 +56,14 @@ void Game::init(const std::string& config) {
             m_playerSpawnBox.x_max = m_window.getSize().x - m_playerConfig.SR;
             m_playerSpawnBox.y_max = m_window.getSize().y - m_playerConfig.SR;
 
-            std::cout << "Player: \n";
-            std::cout << "\t" << m_playerConfig.SR << "\n";
-            std::cout << "\t" << m_playerConfig.CR << "\n";
-            std::cout << "\t" << m_playerConfig.S << "\n";
-            std::cout << "\t" << m_playerConfig.FR << " " << m_playerConfig.FG << " " << m_playerConfig.FB << "\n";
-            std::cout << "\t" << m_playerConfig.OR << " " << m_playerConfig.OG << " " << m_playerConfig.OB << "\n";
-            std::cout << "\t" << m_playerConfig.OT << "\n";
-            std::cout << "\t" << m_playerConfig.V << "\n";
+            //std::cout << "Player: \n";
+            //std::cout << "\t" << m_playerConfig.SR << "\n";
+            //std::cout << "\t" << m_playerConfig.CR << "\n";
+            //std::cout << "\t" << m_playerConfig.S << "\n";
+            //std::cout << "\t" << m_playerConfig.FR << " " << m_playerConfig.FG << " " << m_playerConfig.FB << "\n";
+            //std::cout << "\t" << m_playerConfig.OR << " " << m_playerConfig.OG << " " << m_playerConfig.OB << "\n";
+            //std::cout << "\t" << m_playerConfig.OT << "\n";
+            //std::cout << "\t" << m_playerConfig.V << "\n";
         } else if (type.compare("Enemy") == 0) {
             fin >> m_enemyConfig.SR;
             fin >> m_enemyConfig.CR;
@@ -75,15 +80,15 @@ void Game::init(const std::string& config) {
             m_enemySpawnBox.x_max = m_window.getSize().x - m_enemyConfig.SR;
             m_enemySpawnBox.y_max = m_window.getSize().y - m_enemyConfig.SR;
 
-            std::cout << "Enemy: \n";
-            std::cout << "\t" << m_enemyConfig.SR << "\n";
-            std::cout << "\t" << m_enemyConfig.CR << "\n";
-            std::cout << "\t" << m_enemyConfig.SMIN << " " << m_enemyConfig.SMAX << "\n";
-            std::cout << "\t" << m_enemyConfig.OR << " " << m_enemyConfig.OG << " " << m_enemyConfig.OB << "\n";
-            std::cout << "\t" << m_enemyConfig.OT << "\n";
-            std::cout << "\t" << m_enemyConfig.VMIN << " " << m_enemyConfig.VMAX << "\n";
-            std::cout << "\t" << m_enemyConfig.L << "\n";
-            std::cout << "\t" << m_enemyConfig.SI << "\n";
+            //std::cout << "Enemy: \n";
+            //std::cout << "\t" << m_enemyConfig.SR << "\n";
+            //std::cout << "\t" << m_enemyConfig.CR << "\n";
+            //std::cout << "\t" << m_enemyConfig.SMIN << " " << m_enemyConfig.SMAX << "\n";
+            //std::cout << "\t" << m_enemyConfig.OR << " " << m_enemyConfig.OG << " " << m_enemyConfig.OB << "\n";
+            //std::cout << "\t" << m_enemyConfig.OT << "\n";
+            //std::cout << "\t" << m_enemyConfig.VMIN << " " << m_enemyConfig.VMAX << "\n";
+            //std::cout << "\t" << m_enemyConfig.L << "\n";
+            //std::cout << "\t" << m_enemyConfig.SI << "\n";
         } else if (type.compare("Bullet") == 0) {
             fin >> m_bulletConfig.SR;
             fin >> m_bulletConfig.CR;
@@ -93,23 +98,20 @@ void Game::init(const std::string& config) {
             fin >> m_bulletConfig.OT;
             fin >> m_bulletConfig.V;
             fin >> m_bulletConfig.L;
-            std::cout << "Bullet: \n";
-            std::cout << "\t" << m_bulletConfig.SR << "\n";
-            std::cout << "\t" << m_bulletConfig.CR << "\n";
-            std::cout << "\t" << m_bulletConfig.S << "\n";
-            std::cout << "\t" << m_bulletConfig.FR << " " << m_bulletConfig.FG << " " << m_bulletConfig.FB << "\n";
-            std::cout << "\t" << m_bulletConfig.OR << " " << m_bulletConfig.OG << " " << m_bulletConfig.OB << "\n";
-            std::cout << "\t" << m_bulletConfig.OT << "\n";
-            std::cout << "\t" << m_bulletConfig.V << "\n";
-            std::cout << "\t" << m_bulletConfig.L << "\n";
+
+            //std::cout << "Bullet: \n";
+            //std::cout << "\t" << m_bulletConfig.SR << "\n";
+            //std::cout << "\t" << m_bulletConfig.CR << "\n";
+            //std::cout << "\t" << m_bulletConfig.S << "\n";
+            //std::cout << "\t" << m_bulletConfig.FR << " " << m_bulletConfig.FG << " " << m_bulletConfig.FB << "\n";
+            //std::cout << "\t" << m_bulletConfig.OR << " " << m_bulletConfig.OG << " " << m_bulletConfig.OB << "\n";
+            //std::cout << "\t" << m_bulletConfig.OT << "\n";
+            //std::cout << "\t" << m_bulletConfig.V << "\n";
+            //std::cout << "\t" << m_bulletConfig.L << "\n";
         } else {
             fin >> type;
         }
     }
-}
-
-int Game::getRandomInt(int min, int max) {
-    return min + (rand() % (1 + min - max));
 }
 
 void Game::sMovement() {
@@ -187,10 +189,48 @@ void Game::sUserInput() {
                     break;
             }
         }
+
+        // Mouse left click input
+        if (
+                e.type == sf::Event::MouseButtonPressed &&
+                e.mouseButton.button == sf::Mouse::Button::Left
+            ) {
+            m_player->cInput->shoot = true;
+            spawnBullet(m_player, Vec2(e.mouseButton.x, e.mouseButton.y));
+        }
+        if (
+                e.type == sf::Event::MouseButtonPressed &&
+                e.mouseButton.button == sf::Mouse::Button::Left
+            ) {
+            m_player->cInput->shoot = false;
+        }
+
     }
 }
 
 void Game::sRender() {
+    // Bullet fading
+    for (auto e: m_entities.getEntities("bullet")) {
+        e->cLifespan->remaining -= 1;
+        float newOpacity = 255 * (float(e->cLifespan->remaining) / float(e->cLifespan->total));
+        e->cShape->circle.setFillColor(sf::Color(
+                    m_bulletConfig.FR,
+                    m_bulletConfig.FG,
+                    m_bulletConfig.FB,
+                    newOpacity
+                    ));
+        e->cShape->circle.setOutlineColor(sf::Color(
+                    m_bulletConfig.OR, 
+                    m_bulletConfig.OG, 
+                    m_bulletConfig.OB, 
+                    newOpacity
+                    ));
+        if (e->cLifespan->remaining <= 0) {
+            e->destroy();
+        }
+    }
+
+    // Draw all entities
     for (auto e: m_entities.getEntities()) {
         if (e->cTransform != nullptr && e->cShape != nullptr) {
             e->cShape->circle.setPosition(
@@ -202,6 +242,8 @@ void Game::sRender() {
             m_window.draw(e->cShape->circle);
         }
     }
+
+    m_window.display();
 }
 
 void Game::sEnemySpawner() {
@@ -211,17 +253,31 @@ void Game::sEnemySpawner() {
 }
 
 void Game::sCollision() {
+    // Bullet collisions
+    for (auto bullet: m_entities.getEntities("bullet")) {
+        for (auto enemy: m_entities.getEntities("enemy")) {
+            float dist = bullet->cTransform->pos.dist(enemy->cTransform->pos);
+            if (dist <= bullet->cCollision->radius + enemy->cCollision->radius) {
+                spawnSmallEnemies(enemy);
+                enemy->destroy();
+                bullet->destroy();
+            }
+        }
+    }
     // Boundary collisions
     for (auto e: m_entities.getEntities("enemy")) {
         if (e->cCollision != nullptr && e->cShape != nullptr && e->cTransform != nullptr) {
             float x = e->cTransform->pos.x;
             float y = e->cTransform->pos.y;
 
+            bool updateAngle = false;
             if (x <= m_enemySpawnBox.x_min || x >= m_enemySpawnBox.x_max) {
                 e->cTransform->velocity.x *= -1;
+                updateAngle = true;
             }
             if (y <= m_enemySpawnBox.y_min || y >= m_enemySpawnBox.y_max) {
                 e->cTransform->velocity.y *= -1;
+                updateAngle = true;
             }
         }
     }
@@ -255,18 +311,15 @@ void Game::spawnEnemy() {
     
     // Determine random velocity settings for new enemy
     float speed = getRandomInt(m_enemyConfig.SMIN, m_enemyConfig.SMAX);  
-    Vec2 randomVelocity(speed, speed);
-    int moveRight = rand() % 100 + 1;
-    int moveDown  = rand() % 100 + 1;
-    if (moveRight >= 50) randomVelocity.x *= -1;
-    if (moveDown  >= 50) randomVelocity.y *= -1;
+    float theta = getRandomInt(0, 360);
+    Vec2 velocity(speed * std::cos(theta * PI/180), speed * std::sin(theta * PI/180));
 
     newEnemy->cTransform = std::make_shared<CTransform>(
             Vec2(
                 getRandomInt(m_enemySpawnBox.x_min, m_enemySpawnBox.x_max),
                 getRandomInt(m_enemySpawnBox.y_min, m_enemySpawnBox.y_max)
                 ),
-            randomVelocity,
+            velocity,
             0
             );
 
@@ -287,6 +340,69 @@ void Game::spawnEnemy() {
 
 }
 
+void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
+    int V = origin->cShape->circle.getPointCount();
+
+    // Spawn 360 / V small enemy entities
+    for (int theta = 360 / V; theta <= 360; theta += 360 / V) {
+        std::shared_ptr<Entity> smallEnemy = m_entities.addEntity("smallEnemy");
+
+        Vec2 velocity(std::cos(theta * PI/180), std::sin(theta * PI/180));
+        velocity.normalize();
+        velocity.x *= origin->cTransform->velocity.length();
+        velocity.y *= origin->cTransform->velocity.length();
+        
+        smallEnemy->cTransform = std::make_shared<CTransform>(
+                origin->cTransform->pos,
+                velocity,
+                0
+                );
+
+        smallEnemy->cShape = std::make_shared<CShape>(
+                m_enemyConfig.SR / 2,
+                V,
+                origin->cShape->circle.getFillColor(), 
+                origin->cShape->circle.getOutlineColor(), 
+                origin->cShape->circle.getOutlineThickness()
+                );
+    }
+}
+
+void Game::spawnBullet(std::shared_ptr<Entity> origin, const Vec2& mousePos) {
+    std::shared_ptr<Entity> newBullet = m_entities.addEntity("bullet");
+
+    Vec2 diff(mousePos.x - origin->cTransform->pos.x, mousePos.y - origin->cTransform->pos.y);
+    diff.normalize();
+    Vec2 velocity(m_bulletConfig.S * diff.x, m_bulletConfig.S * diff.y);
+    newBullet->cTransform = std::make_shared<CTransform>(
+            origin->cTransform->pos,
+            velocity,
+            0
+            );
+
+    newBullet->cShape = std::make_shared<CShape>(
+            m_bulletConfig.SR,
+            m_bulletConfig.V,
+            sf::Color(
+                m_bulletConfig.FR,
+                m_bulletConfig.FG,
+                m_bulletConfig.FB,
+                255
+                ),
+            sf::Color(
+                m_bulletConfig.OR,
+                m_bulletConfig.OG,
+                m_bulletConfig.OB,
+                255
+                ),
+            m_bulletConfig.OT
+            );
+
+    newBullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
+
+    newBullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+}
+
 Game::Game(const std::string& config) {
     init(config);
     spawnPlayer();
@@ -305,12 +421,10 @@ void Game::run() {
         // Systems
         sMovement();
         sUserInput();
-        sRender();
         sEnemySpawner();
         sCollision();
+        sRender();
 
-        // Display new frame
-        m_window.display();
     }
 
 }
