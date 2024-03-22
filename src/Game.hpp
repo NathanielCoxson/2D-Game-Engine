@@ -5,9 +5,11 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 
-struct PlayerConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
-struct EnemyConfig  { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
-struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
+struct PlayerConfig   { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
+struct EnemyConfig    { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
+struct BulletConfig   { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
+struct EnemySpawnBox  { int x_min, x_max, y_min, y_max; };
+struct PlayerSpawnBox { int x_min, x_max, y_min, y_max; };
 
 class Game {
 
@@ -19,6 +21,8 @@ class Game {
     PlayerConfig            m_playerConfig;
     EnemyConfig             m_enemyConfig;
     BulletConfig            m_bulletConfig;
+    EnemySpawnBox           m_enemySpawnBox;
+    PlayerSpawnBox          m_playerSpawnBox;
     int                     m_score = 0;
     int                     m_currentFrame = 0;
     int                     m_lastEnemySpawnTime = 0;
@@ -29,6 +33,7 @@ class Game {
     // Private memeber functions
     void init(const std::string& config); // Initialize game using config file.
     void setPaused(bool paused);
+    int  getRandomInt(int min, int max); 
 
     // Systems
     void sMovement();

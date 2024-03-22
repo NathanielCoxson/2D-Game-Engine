@@ -6,6 +6,7 @@
 #include <iostream>
 
 void Game::init(const std::string& config) {
+    srand(time(NULL));
     std::ifstream fin(config);
     
     // Read config in
@@ -43,6 +44,13 @@ void Game::init(const std::string& config) {
             fin >> m_playerConfig.OR >> m_playerConfig.OG >> m_playerConfig.OB;
             fin >> m_playerConfig.OT;
             fin >> m_playerConfig.V;
+
+            // Set bounds on player spawn area
+            m_playerSpawnBox.x_min = m_playerConfig.SR;
+            m_playerSpawnBox.y_min = m_playerConfig.SR;
+            m_playerSpawnBox.x_max = m_window.getSize().x - m_playerConfig.SR;
+            m_playerSpawnBox.y_max = m_window.getSize().y - m_playerConfig.SR;
+
             std::cout << "Player: \n";
             std::cout << "\t" << m_playerConfig.SR << "\n";
             std::cout << "\t" << m_playerConfig.CR << "\n";
@@ -60,6 +68,13 @@ void Game::init(const std::string& config) {
             fin >> m_enemyConfig.VMIN >> m_enemyConfig.VMAX;
             fin >> m_enemyConfig.L;
             fin >> m_enemyConfig.SI;
+
+            // Set bounds on enemey spawn area
+            m_enemySpawnBox.x_min = m_enemyConfig.SR;
+            m_enemySpawnBox.y_min = m_enemyConfig.SR;
+            m_enemySpawnBox.x_max = m_window.getSize().x - m_enemyConfig.SR;
+            m_enemySpawnBox.y_max = m_window.getSize().y - m_enemyConfig.SR;
+
             std::cout << "Enemy: \n";
             std::cout << "\t" << m_enemyConfig.SR << "\n";
             std::cout << "\t" << m_enemyConfig.CR << "\n";
@@ -93,23 +108,29 @@ void Game::init(const std::string& config) {
     }
 }
 
+int Game::getRandomInt(int min, int max) {
+    return min + (rand() % (1 + min - max));
+}
+
 void Game::sMovement() {
     // Player velocity updates
     m_player->cTransform->velocity = { 0.0, 0.0 };
+    float player_x = m_player->cTransform->pos.x;
+    float player_y = m_player->cTransform->pos.y;
     // Up input 
-    if (m_player->cInput->up) {
+    if (m_player->cInput->up && player_y > m_playerSpawnBox.y_min) {
         m_player->cTransform->velocity.y = -1 * m_playerConfig.S;
     }
     // Down input 
-    if (m_player->cInput->down) {
+    if (m_player->cInput->down && player_y < m_playerSpawnBox.y_max) {
         m_player->cTransform->velocity.y = m_playerConfig.S;
     }
     // Left input 
-    if (m_player->cInput->left) {
+    if (m_player->cInput->left && player_x > m_playerSpawnBox.x_min) {
         m_player->cTransform->velocity.x = -1 * m_playerConfig.S;
     }
     // Right input 
-    if (m_player->cInput->right) {
+    if (m_player->cInput->right && player_x < m_playerSpawnBox.x_max) {
         m_player->cTransform->velocity.x = m_playerConfig.S;
     }
 
@@ -132,19 +153,15 @@ void Game::sUserInput() {
         if (e.type == sf::Event::KeyPressed) {
             switch (e.key.code) {
                 case sf::Keyboard::W:
-                    std::cout << "W Key pressed\n";
                     m_player->cInput->up = true;
                     break;
                 case sf::Keyboard::A:
-                    std::cout << "A Key pressed\n";
                     m_player->cInput->left = true;
                     break;
                 case sf::Keyboard::S:
-                    std::cout << "S Key pressed\n";
                     m_player->cInput->down = true;
                     break;
                 case sf::Keyboard::D:
-                    std::cout << "D Key pressed\n";
                     m_player->cInput->right = true;
                     break;
                 default:
@@ -155,19 +172,15 @@ void Game::sUserInput() {
         if (e.type == sf::Event::KeyReleased) {
             switch (e.key.code) {
                 case sf::Keyboard::W:
-                    std::cout << "W Key released\n";
                     m_player->cInput->up = false;
                     break;
                 case sf::Keyboard::A:
-                    std::cout << "A Key released\n";
                     m_player->cInput->left = false;
                     break;
                 case sf::Keyboard::S:
-                    std::cout << "S Key released\n";
                     m_player->cInput->down = false;
                     break;
                 case sf::Keyboard::D:
-                    std::cout << "D Key released\n";
                     m_player->cInput->right = false;
                     break;
                 default:
@@ -191,6 +204,29 @@ void Game::sRender() {
     }
 }
 
+void Game::sEnemySpawner() {
+    if (m_currentFrame % m_enemyConfig.SI == 0) {
+        spawnEnemy();
+    }
+}
+
+void Game::sCollision() {
+    // Boundary collisions
+    for (auto e: m_entities.getEntities("enemy")) {
+        if (e->cCollision != nullptr && e->cShape != nullptr && e->cTransform != nullptr) {
+            float x = e->cTransform->pos.x;
+            float y = e->cTransform->pos.y;
+
+            if (x <= m_enemySpawnBox.x_min || x >= m_enemySpawnBox.x_max) {
+                e->cTransform->velocity.x *= -1;
+            }
+            if (y <= m_enemySpawnBox.y_min || y >= m_enemySpawnBox.y_max) {
+                e->cTransform->velocity.y *= -1;
+            }
+        }
+    }
+}
+
 void Game::spawnPlayer() {
     m_player = m_entities.addEntity("player");
 
@@ -200,10 +236,6 @@ void Game::spawnPlayer() {
             0
             );
 
-    m_player->cCollision = std::make_shared<CCollision>(m_playerConfig.CR);
-
-    m_player->cInput = std::make_shared<CInput>();
-
     m_player->cShape = std::make_shared<CShape>(
             m_playerConfig.SR,
             m_playerConfig.V,
@@ -211,10 +243,48 @@ void Game::spawnPlayer() {
             sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB, 255),
             m_playerConfig.OT
             );
-    m_player->cShape->circle.setPosition(
-            m_player->cTransform->pos.x,
-            m_player->cTransform->pos.y
+
+    m_player->cCollision = std::make_shared<CCollision>(m_playerConfig.CR);
+
+    m_player->cInput = std::make_shared<CInput>();
+
+}
+
+void Game::spawnEnemy() {
+    std::shared_ptr<Entity> newEnemy = m_entities.addEntity("enemy");  
+    
+    // Determine random velocity settings for new enemy
+    float speed = getRandomInt(m_enemyConfig.SMIN, m_enemyConfig.SMAX);  
+    Vec2 randomVelocity(speed, speed);
+    int moveRight = rand() % 100 + 1;
+    int moveDown  = rand() % 100 + 1;
+    if (moveRight >= 50) randomVelocity.x *= -1;
+    if (moveDown  >= 50) randomVelocity.y *= -1;
+
+    newEnemy->cTransform = std::make_shared<CTransform>(
+            Vec2(
+                getRandomInt(m_enemySpawnBox.x_min, m_enemySpawnBox.x_max),
+                getRandomInt(m_enemySpawnBox.y_min, m_enemySpawnBox.y_max)
+                ),
+            randomVelocity,
+            0
             );
+
+    newEnemy->cShape = std::make_shared<CShape>(
+            m_enemyConfig.SR,
+            getRandomInt(m_enemyConfig.VMIN, m_enemyConfig.VMAX),
+            sf::Color(
+                getRandomInt(0, 255),
+                getRandomInt(0, 255),
+                getRandomInt(0, 255),
+                255
+                ),
+            sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB, 255),
+            m_enemyConfig.OT
+            );
+    
+    newEnemy->cCollision = std::make_shared<CCollision>(m_enemyConfig.CR);
+
 }
 
 Game::Game(const std::string& config) {
@@ -226,7 +296,7 @@ void Game::run() {
     sf::Event e;
 
     while (m_window.isOpen()) {
-
+        m_currentFrame++;
         m_entities.update();
 
         // Clear previous frame
@@ -236,9 +306,11 @@ void Game::run() {
         sMovement();
         sUserInput();
         sRender();
-
+        sEnemySpawner();
+        sCollision();
 
         // Display new frame
         m_window.display();
     }
+
 }
