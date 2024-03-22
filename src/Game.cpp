@@ -343,7 +343,7 @@ void Game::spawnEnemy() {
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
     int V = origin->cShape->circle.getPointCount();
 
-    std::cout << "Spawn " << V << "\n";
+    // Spawn 360 / V small enemy entities
     for (int theta = 360 / V; theta <= 360; theta += 360 / V) {
         std::shared_ptr<Entity> smallEnemy = m_entities.addEntity("smallEnemy");
 
