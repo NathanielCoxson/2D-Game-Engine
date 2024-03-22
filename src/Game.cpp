@@ -202,6 +202,12 @@ void Game::sRender() {
     }
 }
 
+void Game::sEnemySpawner() {
+    if (m_currentFrame % m_enemyConfig.SI == 0) {
+        spawnEnemy();
+    }
+}
+
 void Game::spawnPlayer() {
     m_player = m_entities.addEntity("player");
 
@@ -260,7 +266,6 @@ void Game::spawnEnemy() {
     
     newEnemy->cCollision = std::make_shared<CCollision>(m_enemyConfig.CR);
 
-    newEnemy->cLifespan = std::make_shared<CLifespan>(m_enemyConfig.L);
 }
 
 Game::Game(const std::string& config) {
@@ -282,7 +287,7 @@ void Game::run() {
         sMovement();
         sUserInput();
         sRender();
-
+        sEnemySpawner();
 
         // Display new frame
         m_window.display();
