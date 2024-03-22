@@ -115,20 +115,22 @@ int Game::getRandomInt(int min, int max) {
 void Game::sMovement() {
     // Player velocity updates
     m_player->cTransform->velocity = { 0.0, 0.0 };
+    float player_x = m_player->cTransform->pos.x;
+    float player_y = m_player->cTransform->pos.y;
     // Up input 
-    if (m_player->cInput->up) {
+    if (m_player->cInput->up && player_y > m_playerSpawnBox.y_min) {
         m_player->cTransform->velocity.y = -1 * m_playerConfig.S;
     }
     // Down input 
-    if (m_player->cInput->down) {
+    if (m_player->cInput->down && player_y < m_playerSpawnBox.y_max) {
         m_player->cTransform->velocity.y = m_playerConfig.S;
     }
     // Left input 
-    if (m_player->cInput->left) {
+    if (m_player->cInput->left && player_x > m_playerSpawnBox.x_min) {
         m_player->cTransform->velocity.x = -1 * m_playerConfig.S;
     }
     // Right input 
-    if (m_player->cInput->right) {
+    if (m_player->cInput->right && player_x < m_playerSpawnBox.x_max) {
         m_player->cTransform->velocity.x = m_playerConfig.S;
     }
 
@@ -205,6 +207,23 @@ void Game::sRender() {
 void Game::sEnemySpawner() {
     if (m_currentFrame % m_enemyConfig.SI == 0) {
         spawnEnemy();
+    }
+}
+
+void Game::sCollision() {
+    // Boundary collisions
+    for (auto e: m_entities.getEntities("enemy")) {
+        if (e->cCollision != nullptr && e->cShape != nullptr && e->cTransform != nullptr) {
+            float x = e->cTransform->pos.x;
+            float y = e->cTransform->pos.y;
+
+            if (x <= m_enemySpawnBox.x_min || x >= m_enemySpawnBox.x_max) {
+                e->cTransform->velocity.x *= -1;
+            }
+            if (y <= m_enemySpawnBox.y_min || y >= m_enemySpawnBox.y_max) {
+                e->cTransform->velocity.y *= -1;
+            }
+        }
     }
 }
 
@@ -288,6 +307,7 @@ void Game::run() {
         sUserInput();
         sRender();
         sEnemySpawner();
+        sCollision();
 
         // Display new frame
         m_window.display();
