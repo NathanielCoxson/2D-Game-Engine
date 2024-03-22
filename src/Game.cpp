@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "Vec2.hpp"
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -187,10 +188,48 @@ void Game::sUserInput() {
                     break;
             }
         }
+
+        // Mouse left click input
+        if (
+                e.type == sf::Event::MouseButtonPressed &&
+                e.mouseButton.button == sf::Mouse::Button::Left
+            ) {
+            m_player->cInput->shoot = true;
+            spawnBullet(m_player, Vec2(e.mouseButton.x, e.mouseButton.y));
+        }
+        if (
+                e.type == sf::Event::MouseButtonPressed &&
+                e.mouseButton.button == sf::Mouse::Button::Left
+            ) {
+            m_player->cInput->shoot = false;
+        }
+
     }
 }
 
 void Game::sRender() {
+    // Bullet fading
+    for (auto e: m_entities.getEntities("bullet")) {
+        e->cLifespan->remaining -= 1;
+        float newOpacity = 255 * (float(e->cLifespan->remaining) / float(e->cLifespan->total));
+        e->cShape->circle.setFillColor(sf::Color(
+                    m_bulletConfig.FR,
+                    m_bulletConfig.FG,
+                    m_bulletConfig.FB,
+                    newOpacity
+                    ));
+        e->cShape->circle.setOutlineColor(sf::Color(
+                    m_bulletConfig.OR, 
+                    m_bulletConfig.OG, 
+                    m_bulletConfig.OB, 
+                    newOpacity
+                    ));
+        if (e->cLifespan->remaining <= 0) {
+            e->destroy();
+        }
+    }
+
+    // Draw all entities
     for (auto e: m_entities.getEntities()) {
         if (e->cTransform != nullptr && e->cShape != nullptr) {
             e->cShape->circle.setPosition(
@@ -202,6 +241,8 @@ void Game::sRender() {
             m_window.draw(e->cShape->circle);
         }
     }
+
+    m_window.display();
 }
 
 void Game::sEnemySpawner() {
@@ -217,11 +258,14 @@ void Game::sCollision() {
             float x = e->cTransform->pos.x;
             float y = e->cTransform->pos.y;
 
+            bool updateAngle = false;
             if (x <= m_enemySpawnBox.x_min || x >= m_enemySpawnBox.x_max) {
                 e->cTransform->velocity.x *= -1;
+                updateAngle = true;
             }
             if (y <= m_enemySpawnBox.y_min || y >= m_enemySpawnBox.y_max) {
                 e->cTransform->velocity.y *= -1;
+                updateAngle = true;
             }
         }
     }
@@ -255,18 +299,15 @@ void Game::spawnEnemy() {
     
     // Determine random velocity settings for new enemy
     float speed = getRandomInt(m_enemyConfig.SMIN, m_enemyConfig.SMAX);  
-    Vec2 randomVelocity(speed, speed);
-    int moveRight = rand() % 100 + 1;
-    int moveDown  = rand() % 100 + 1;
-    if (moveRight >= 50) randomVelocity.x *= -1;
-    if (moveDown  >= 50) randomVelocity.y *= -1;
+    float theta = getRandomInt(0, 360);
+    Vec2 velocity(speed * std::cos(theta), speed * std::sin(theta));
 
     newEnemy->cTransform = std::make_shared<CTransform>(
             Vec2(
                 getRandomInt(m_enemySpawnBox.x_min, m_enemySpawnBox.x_max),
                 getRandomInt(m_enemySpawnBox.y_min, m_enemySpawnBox.y_max)
                 ),
-            randomVelocity,
+            velocity,
             0
             );
 
@@ -287,6 +328,45 @@ void Game::spawnEnemy() {
 
 }
 
+void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
+
+}
+
+void Game::spawnBullet(std::shared_ptr<Entity> origin, const Vec2& mousePos) {
+    std::shared_ptr<Entity> newBullet = m_entities.addEntity("bullet");
+
+    Vec2 diff(mousePos.x - origin->cTransform->pos.x, mousePos.y - origin->cTransform->pos.y);
+    diff.normalize();
+    Vec2 velocity(m_bulletConfig.S * diff.x, m_bulletConfig.S * diff.y);
+    newBullet->cTransform = std::make_shared<CTransform>(
+            origin->cTransform->pos,
+            velocity,
+            0
+            );
+
+    newBullet->cShape = std::make_shared<CShape>(
+            m_bulletConfig.SR,
+            m_bulletConfig.V,
+            sf::Color(
+                m_bulletConfig.FR,
+                m_bulletConfig.FG,
+                m_bulletConfig.FB,
+                255
+                ),
+            sf::Color(
+                m_bulletConfig.OR,
+                m_bulletConfig.OG,
+                m_bulletConfig.OB,
+                255
+                ),
+            m_bulletConfig.OT
+            );
+
+    newBullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
+
+    newBullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+}
+
 Game::Game(const std::string& config) {
     init(config);
     spawnPlayer();
@@ -305,12 +385,10 @@ void Game::run() {
         // Systems
         sMovement();
         sUserInput();
-        sRender();
         sEnemySpawner();
         sCollision();
+        sRender();
 
-        // Display new frame
-        m_window.display();
     }
 
 }
