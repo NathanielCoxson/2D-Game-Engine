@@ -252,6 +252,16 @@ void Game::sEnemySpawner() {
 }
 
 void Game::sCollision() {
+    // Bullet collisions
+    for (auto bullet: m_entities.getEntities("bullet")) {
+        for (auto enemy: m_entities.getEntities("enemy")) {
+            float dist = bullet->cTransform->pos.dist(enemy->cTransform->pos);
+            if (dist <= bullet->cCollision->radius + enemy->cCollision->radius) {
+                enemy->destroy();
+                bullet->destroy();
+            }
+        }
+    }
     // Boundary collisions
     for (auto e: m_entities.getEntities("enemy")) {
         if (e->cCollision != nullptr && e->cShape != nullptr && e->cTransform != nullptr) {
