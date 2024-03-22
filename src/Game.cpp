@@ -6,6 +6,10 @@
 #include <fstream>
 #include <iostream>
 
+int Game::getRandomInt(int min, int max) {
+    return (min + (rand() % (1 + max - min)));
+}
+
 void Game::init(const std::string& config) {
     srand(time(NULL));
     std::ifstream fin(config);
@@ -15,7 +19,7 @@ void Game::init(const std::string& config) {
 
     while (!fin.eof()) {
         fin >> type;
-        std::cout << "Reading: " << type << "\n";
+        //std::cout << "Reading: " << type << "\n";
 
         if (type.compare("Window") == 0) {
             std::string title = "Geometry Battle";
@@ -52,14 +56,14 @@ void Game::init(const std::string& config) {
             m_playerSpawnBox.x_max = m_window.getSize().x - m_playerConfig.SR;
             m_playerSpawnBox.y_max = m_window.getSize().y - m_playerConfig.SR;
 
-            std::cout << "Player: \n";
-            std::cout << "\t" << m_playerConfig.SR << "\n";
-            std::cout << "\t" << m_playerConfig.CR << "\n";
-            std::cout << "\t" << m_playerConfig.S << "\n";
-            std::cout << "\t" << m_playerConfig.FR << " " << m_playerConfig.FG << " " << m_playerConfig.FB << "\n";
-            std::cout << "\t" << m_playerConfig.OR << " " << m_playerConfig.OG << " " << m_playerConfig.OB << "\n";
-            std::cout << "\t" << m_playerConfig.OT << "\n";
-            std::cout << "\t" << m_playerConfig.V << "\n";
+            //std::cout << "Player: \n";
+            //std::cout << "\t" << m_playerConfig.SR << "\n";
+            //std::cout << "\t" << m_playerConfig.CR << "\n";
+            //std::cout << "\t" << m_playerConfig.S << "\n";
+            //std::cout << "\t" << m_playerConfig.FR << " " << m_playerConfig.FG << " " << m_playerConfig.FB << "\n";
+            //std::cout << "\t" << m_playerConfig.OR << " " << m_playerConfig.OG << " " << m_playerConfig.OB << "\n";
+            //std::cout << "\t" << m_playerConfig.OT << "\n";
+            //std::cout << "\t" << m_playerConfig.V << "\n";
         } else if (type.compare("Enemy") == 0) {
             fin >> m_enemyConfig.SR;
             fin >> m_enemyConfig.CR;
@@ -76,15 +80,15 @@ void Game::init(const std::string& config) {
             m_enemySpawnBox.x_max = m_window.getSize().x - m_enemyConfig.SR;
             m_enemySpawnBox.y_max = m_window.getSize().y - m_enemyConfig.SR;
 
-            std::cout << "Enemy: \n";
-            std::cout << "\t" << m_enemyConfig.SR << "\n";
-            std::cout << "\t" << m_enemyConfig.CR << "\n";
-            std::cout << "\t" << m_enemyConfig.SMIN << " " << m_enemyConfig.SMAX << "\n";
-            std::cout << "\t" << m_enemyConfig.OR << " " << m_enemyConfig.OG << " " << m_enemyConfig.OB << "\n";
-            std::cout << "\t" << m_enemyConfig.OT << "\n";
-            std::cout << "\t" << m_enemyConfig.VMIN << " " << m_enemyConfig.VMAX << "\n";
-            std::cout << "\t" << m_enemyConfig.L << "\n";
-            std::cout << "\t" << m_enemyConfig.SI << "\n";
+            //std::cout << "Enemy: \n";
+            //std::cout << "\t" << m_enemyConfig.SR << "\n";
+            //std::cout << "\t" << m_enemyConfig.CR << "\n";
+            //std::cout << "\t" << m_enemyConfig.SMIN << " " << m_enemyConfig.SMAX << "\n";
+            //std::cout << "\t" << m_enemyConfig.OR << " " << m_enemyConfig.OG << " " << m_enemyConfig.OB << "\n";
+            //std::cout << "\t" << m_enemyConfig.OT << "\n";
+            //std::cout << "\t" << m_enemyConfig.VMIN << " " << m_enemyConfig.VMAX << "\n";
+            //std::cout << "\t" << m_enemyConfig.L << "\n";
+            //std::cout << "\t" << m_enemyConfig.SI << "\n";
         } else if (type.compare("Bullet") == 0) {
             fin >> m_bulletConfig.SR;
             fin >> m_bulletConfig.CR;
@@ -94,23 +98,20 @@ void Game::init(const std::string& config) {
             fin >> m_bulletConfig.OT;
             fin >> m_bulletConfig.V;
             fin >> m_bulletConfig.L;
-            std::cout << "Bullet: \n";
-            std::cout << "\t" << m_bulletConfig.SR << "\n";
-            std::cout << "\t" << m_bulletConfig.CR << "\n";
-            std::cout << "\t" << m_bulletConfig.S << "\n";
-            std::cout << "\t" << m_bulletConfig.FR << " " << m_bulletConfig.FG << " " << m_bulletConfig.FB << "\n";
-            std::cout << "\t" << m_bulletConfig.OR << " " << m_bulletConfig.OG << " " << m_bulletConfig.OB << "\n";
-            std::cout << "\t" << m_bulletConfig.OT << "\n";
-            std::cout << "\t" << m_bulletConfig.V << "\n";
-            std::cout << "\t" << m_bulletConfig.L << "\n";
+
+            //std::cout << "Bullet: \n";
+            //std::cout << "\t" << m_bulletConfig.SR << "\n";
+            //std::cout << "\t" << m_bulletConfig.CR << "\n";
+            //std::cout << "\t" << m_bulletConfig.S << "\n";
+            //std::cout << "\t" << m_bulletConfig.FR << " " << m_bulletConfig.FG << " " << m_bulletConfig.FB << "\n";
+            //std::cout << "\t" << m_bulletConfig.OR << " " << m_bulletConfig.OG << " " << m_bulletConfig.OB << "\n";
+            //std::cout << "\t" << m_bulletConfig.OT << "\n";
+            //std::cout << "\t" << m_bulletConfig.V << "\n";
+            //std::cout << "\t" << m_bulletConfig.L << "\n";
         } else {
             fin >> type;
         }
     }
-}
-
-int Game::getRandomInt(int min, int max) {
-    return min + (rand() % (1 + min - max));
 }
 
 void Game::sMovement() {
@@ -257,6 +258,7 @@ void Game::sCollision() {
         for (auto enemy: m_entities.getEntities("enemy")) {
             float dist = bullet->cTransform->pos.dist(enemy->cTransform->pos);
             if (dist <= bullet->cCollision->radius + enemy->cCollision->radius) {
+                spawnSmallEnemies(enemy);
                 enemy->destroy();
                 bullet->destroy();
             }
@@ -310,7 +312,7 @@ void Game::spawnEnemy() {
     // Determine random velocity settings for new enemy
     float speed = getRandomInt(m_enemyConfig.SMIN, m_enemyConfig.SMAX);  
     float theta = getRandomInt(0, 360);
-    Vec2 velocity(speed * std::cos(theta), speed * std::sin(theta));
+    Vec2 velocity(speed * std::cos(theta * PI/180), speed * std::sin(theta * PI/180));
 
     newEnemy->cTransform = std::make_shared<CTransform>(
             Vec2(
@@ -339,7 +341,31 @@ void Game::spawnEnemy() {
 }
 
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
+    int V = origin->cShape->circle.getPointCount();
 
+    std::cout << "Spawn " << V << "\n";
+    for (int theta = 360 / V; theta <= 360; theta += 360 / V) {
+        std::shared_ptr<Entity> smallEnemy = m_entities.addEntity("smallEnemy");
+
+        Vec2 velocity(std::cos(theta * PI/180), std::sin(theta * PI/180));
+        velocity.normalize();
+        velocity.x *= origin->cTransform->velocity.length();
+        velocity.y *= origin->cTransform->velocity.length();
+        
+        smallEnemy->cTransform = std::make_shared<CTransform>(
+                origin->cTransform->pos,
+                velocity,
+                0
+                );
+
+        smallEnemy->cShape = std::make_shared<CShape>(
+                m_enemyConfig.SR / 2,
+                V,
+                origin->cShape->circle.getFillColor(), 
+                origin->cShape->circle.getOutlineColor(), 
+                origin->cShape->circle.getOutlineThickness()
+                );
+    }
 }
 
 void Game::spawnBullet(std::shared_ptr<Entity> origin, const Vec2& mousePos) {

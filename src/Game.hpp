@@ -1,5 +1,7 @@
 #pragma once
 
+#define PI 3.14159265
+
 #include "EntityManager.hpp"
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
