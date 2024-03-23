@@ -36,6 +36,7 @@ class Game {
     void init(const std::string& config); // Initialize game using config file.
     void setPaused(bool paused);
     int  getRandomInt(int min, int max); 
+    void fadeEntity(std::shared_ptr<Entity> e, sf::Color fill, sf::Color outline);
 
     // Systems
     void sMovement();
