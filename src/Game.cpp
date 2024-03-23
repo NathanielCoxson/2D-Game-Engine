@@ -263,6 +263,14 @@ void Game::sCollision() {
                 bullet->destroy();
             }
         }
+
+        for (auto smallEnemy: m_entities.getEntities("smallEnemy")) {
+            float dist = bullet->cTransform->pos.dist(smallEnemy->cTransform->pos);
+            if (dist <= bullet->cCollision->radius + smallEnemy->cCollision->radius) {
+                smallEnemy->destroy();
+                bullet->destroy();
+            }
+        }
     }
     // Boundary collisions
     for (auto e: m_entities.getEntities("enemy")) {
@@ -365,6 +373,8 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
                 origin->cShape->circle.getOutlineColor(), 
                 origin->cShape->circle.getOutlineThickness()
                 );
+
+        smallEnemy->cCollision = std::make_shared<CCollision>(origin->cCollision->radius / 2);
     }
 }
 
