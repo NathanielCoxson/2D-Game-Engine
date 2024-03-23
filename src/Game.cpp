@@ -246,13 +246,18 @@ void Game::sRender() {
                 );
     }
 
-    // Draw all entities
+    // All entities
     for (auto e: m_entities.getEntities()) {
         if (e->cTransform != nullptr && e->cShape != nullptr) {
+            // Update shape position
             e->cShape->circle.setPosition(
                     e->cTransform->pos.x,
                     e->cTransform->pos.y
                     );
+
+            // Update angle
+            e->cShape->circle.setRotation(e->cTransform->angle);
+            e->cTransform->angle++;
         }
         if (e->cShape != nullptr) {
             m_window.draw(e->cShape->circle);
