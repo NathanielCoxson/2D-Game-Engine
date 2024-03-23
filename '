@@ -233,17 +233,23 @@ void Game::sRender() {
     for (auto e: m_entities.getEntities("bullet")) {
         fadeEntity(
                 e,
-                e->cShape->circle.getFillColor(),
-                e->cShape->circle.getOutlineColor()
+                sf::Color(
+                    m_bulletConfig.FR,
+                    m_bulletConfig.FG,
+                    m_bulletConfig.FB,
+                    255
+                    ),
+                sf::Color(
+                    m_bulletConfig.OR,
+                    m_bulletConfig.OG,
+                    m_bulletConfig.OB,
+                    255
+                    )
                 );
     }
 
     for (auto e: m_entities.getEntities("smallEnemy")) {
-        fadeEntity(
-                e,
-                e->cShape->circle.getFillColor(),
-                e->cShape->circle.getOutlineColor()
-                );
+        e->cLifespan->remaining -= 1;
     }
 
     // Draw all entities
