@@ -30,6 +30,19 @@ void Game::fadeEntity(std::shared_ptr<Entity> e, sf::Color fill, sf::Color outli
     }
 }
 
+bool Game::checkForCollision(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+    Vec2  aPos = a->cTransform->pos, bPos = b->cTransform->pos;
+    float aCR = a->cCollision->radius, bCR = b->cCollision->radius;
+    float distSq = ((aPos.x - bPos.x) * (aPos.x - bPos.x)) + ((aPos.y - bPos.y) * (aPos.y - bPos.y));
+    float minDistSq = (aCR + bCR) * (aCR + bCR);
+    return distSq <= minDistSq;
+}
+
+void Game::killPlayer() {
+    m_player->destroy();
+    spawnPlayer();
+}
+
 void Game::init(const std::string& config) {
     srand(time(NULL));
     std::ifstream fin(config);
@@ -277,8 +290,7 @@ void Game::sCollision() {
     // Bullet collisions
     for (auto bullet: m_entities.getEntities("bullet")) {
         for (auto enemy: m_entities.getEntities("enemy")) {
-            float dist = bullet->cTransform->pos.dist(enemy->cTransform->pos);
-            if (dist <= bullet->cCollision->radius + enemy->cCollision->radius) {
+            if (checkForCollision(bullet, enemy)) {
                 spawnSmallEnemies(enemy);
                 enemy->destroy();
                 bullet->destroy();
@@ -286,13 +298,25 @@ void Game::sCollision() {
         }
 
         for (auto smallEnemy: m_entities.getEntities("smallEnemy")) {
-            float dist = bullet->cTransform->pos.dist(smallEnemy->cTransform->pos);
-            if (dist <= bullet->cCollision->radius + smallEnemy->cCollision->radius) {
+            if (checkForCollision(bullet, smallEnemy)) {
                 smallEnemy->destroy();
                 bullet->destroy();
             }
         }
     }
+
+    // Enemy-player collisions
+    for (auto enemy: m_entities.getEntities("enemy")) {
+        if (checkForCollision(m_player, enemy)) {
+            killPlayer();
+        }
+    }
+    for (auto enemy: m_entities.getEntities("smallEnemy")) {
+        if (checkForCollision(m_player, enemy)) {
+            killPlayer();
+        }
+    }
+
     // Boundary collisions
     for (auto e: m_entities.getEntities("enemy")) {
         if (e->cCollision != nullptr && e->cShape != nullptr && e->cTransform != nullptr) {
