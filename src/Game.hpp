@@ -37,6 +37,8 @@ class Game {
     void setPaused(bool paused);
     int  getRandomInt(int min, int max); 
     void fadeEntity(std::shared_ptr<Entity> e, sf::Color fill, sf::Color outline);
+    bool checkForCollision(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b);
+    void killPlayer();
 
     // Systems
     void sMovement();
