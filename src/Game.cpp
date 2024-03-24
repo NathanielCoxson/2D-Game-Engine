@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 
@@ -41,6 +42,22 @@ bool Game::checkForCollision(std::shared_ptr<Entity> a, std::shared_ptr<Entity> 
 void Game::killPlayer() {
     m_player->destroy();
     spawnPlayer();
+
+    // Reset score
+    m_score = 0;
+    updateScore(m_score);
+
+    // Remove currently traveling bullets
+    for (auto bullet: m_entities.getEntities("bullet")) {
+        bullet->destroy();
+    }
+}
+
+void Game::updateScore(int score) {
+    std::stringstream ss;
+    ss << "Score: " << score;
+
+    m_text.setString(ss.str());
 }
 
 void Game::init(const std::string& config) {
@@ -73,7 +90,10 @@ void Game::init(const std::string& config) {
                 std::cout << "Failed to load font file\n";
                 exit(1);
             } 
-            
+
+            m_text = sf::Text("Score: 0", m_font, fontSize);
+            m_text.setPosition(0, 0);
+            m_text.setFillColor(sf::Color(FR, FG, FB, 255));
         } else if (type.compare("Player") == 0) {
             fin >> m_playerConfig.SR;
             fin >> m_playerConfig.CR;
@@ -242,6 +262,9 @@ void Game::sUserInput() {
 }
 
 void Game::sRender() {
+    // Score rendering
+    m_window.draw(m_text);
+
     // Bullet fading
     for (auto e: m_entities.getEntities("bullet")) {
         fadeEntity(
@@ -251,6 +274,7 @@ void Game::sRender() {
                 );
     }
 
+    // Small enemy fading
     for (auto e: m_entities.getEntities("smallEnemy")) {
         fadeEntity(
                 e,
@@ -294,6 +318,7 @@ void Game::sCollision() {
                 spawnSmallEnemies(enemy);
                 enemy->destroy();
                 bullet->destroy();
+                updateScore(++m_score);
             }
         }
 
@@ -301,6 +326,7 @@ void Game::sCollision() {
             if (checkForCollision(bullet, smallEnemy)) {
                 smallEnemy->destroy();
                 bullet->destroy();
+                updateScore(++m_score);
             }
         }
     }

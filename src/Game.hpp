@@ -39,6 +39,7 @@ class Game {
     void fadeEntity(std::shared_ptr<Entity> e, sf::Color fill, sf::Color outline);
     bool checkForCollision(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b);
     void killPlayer();
+    void updateScore(int score);
 
     // Systems
     void sMovement();
