@@ -39,3 +39,9 @@ Bullet: SR CR S FR FG FB OR OG OB OT V L
     OT is outline thickness int
     V is number of vertices int
     L is lifespan
+
+SpecialWeapon: FR FG FB OR OG OB OT L
+    FR, FG, FB is R,G,B fill integers
+    OR, OG, OB is R,G,B outline integers
+    OT is outline thickness integer
+    L is lifespan integer

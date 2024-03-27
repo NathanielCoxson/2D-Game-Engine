@@ -161,6 +161,14 @@ void Game::init(const std::string& config) {
             //std::cout << "\t" << m_bulletConfig.OT << "\n";
             //std::cout << "\t" << m_bulletConfig.V << "\n";
             //std::cout << "\t" << m_bulletConfig.L << "\n";
+        } else if (type.compare("SpecialWeapon") == 0) {
+            fin >> m_specialWeaponConfig.FR;
+            fin >> m_specialWeaponConfig.FG;
+            fin >> m_specialWeaponConfig.FB;
+            fin >> m_specialWeaponConfig.OR;
+            fin >> m_specialWeaponConfig.OG;
+            fin >> m_specialWeaponConfig.OB;
+            fin >> m_specialWeaponConfig.L;
         } else {
             fin >> type;
         }
