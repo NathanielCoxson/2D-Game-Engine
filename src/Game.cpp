@@ -161,6 +161,16 @@ void Game::init(const std::string& config) {
             //std::cout << "\t" << m_bulletConfig.OT << "\n";
             //std::cout << "\t" << m_bulletConfig.V << "\n";
             //std::cout << "\t" << m_bulletConfig.L << "\n";
+        } else if (type.compare("SpecialWeapon") == 0) {
+            fin >> m_specialWeaponConfig.FR;
+            fin >> m_specialWeaponConfig.FG;
+            fin >> m_specialWeaponConfig.FB;
+            fin >> m_specialWeaponConfig.OR;
+            fin >> m_specialWeaponConfig.OG;
+            fin >> m_specialWeaponConfig.OB;
+            fin >> m_specialWeaponConfig.OT;
+            fin >> m_specialWeaponConfig.C;
+            fin >> m_specialWeaponConfig.L;
         } else {
             fin >> type;
         }
@@ -205,6 +215,7 @@ void Game::sUserInput() {
             m_window.close();
         }
 
+        // KeyPress events
         if (e.type == sf::Event::KeyPressed) {
             switch (e.key.code) {
                 case sf::Keyboard::W:
@@ -224,6 +235,7 @@ void Game::sUserInput() {
             }
         }
 
+        // KeyRelease events
         if (e.type == sf::Event::KeyReleased) {
             switch (e.key.code) {
                 case sf::Keyboard::W:
@@ -238,6 +250,9 @@ void Game::sUserInput() {
                 case sf::Keyboard::D:
                     m_player->cInput->right = false;
                     break;
+                case sf::Keyboard::Space:
+                    spawnSpecialWeapon(m_player);
+                    break;
                 default:
                     break;
             }
@@ -248,14 +263,7 @@ void Game::sUserInput() {
                 e.type == sf::Event::MouseButtonPressed &&
                 e.mouseButton.button == sf::Mouse::Button::Left
             ) {
-            m_player->cInput->shoot = true;
             spawnBullet(m_player, Vec2(e.mouseButton.x, e.mouseButton.y));
-        }
-        if (
-                e.type == sf::Event::MouseButtonPressed &&
-                e.mouseButton.button == sf::Mouse::Button::Left
-            ) {
-            m_player->cInput->shoot = false;
         }
 
     }
@@ -484,6 +492,47 @@ void Game::spawnBullet(std::shared_ptr<Entity> origin, const Vec2& mousePos) {
     newBullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
 
     newBullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+}
+
+void Game::spawnSpecialWeapon(std::shared_ptr<Entity> origin) {
+    int interval = 360 / m_specialWeaponConfig.C; 
+     
+    for (int theta = interval; theta <= 360; theta += interval) {
+        std::shared_ptr<Entity> newBullet = m_entities.addEntity("bullet");
+
+        Vec2 velocity(std::cos(theta * PI/180), std::sin(theta * PI/180));
+        velocity.normalize();
+        velocity.x *= m_bulletConfig.S;
+        velocity.y *= m_bulletConfig.S;
+        
+        newBullet->cTransform = std::make_shared<CTransform>(
+                origin->cTransform->pos,
+                velocity,
+                0
+                );
+
+        newBullet->cShape = std::make_shared<CShape>(
+                m_bulletConfig.SR,
+                m_bulletConfig.V,
+                sf::Color(
+                    m_specialWeaponConfig.FR,
+                    m_specialWeaponConfig.FG,
+                    m_specialWeaponConfig.FB,
+                    255
+                    ),
+                sf::Color(
+                    m_specialWeaponConfig.OR,
+                    m_specialWeaponConfig.OG,
+                    m_specialWeaponConfig.OB,
+                    255
+                    ),
+                m_specialWeaponConfig.OT
+                );
+
+        newBullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
+
+        newBullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+    }
 }
 
 Game::Game(const std::string& config) {
