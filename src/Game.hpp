@@ -10,7 +10,7 @@
 struct PlayerConfig        { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
 struct EnemyConfig         { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
 struct BulletConfig        { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
-struct SpecialWeaponConfig { int FR, FG, FB, OR, OG, OB, OT, C, L; };
+struct SpecialWeaponConfig { int FR, FG, FB, OR, OG, OB, OT, C, L, CD; };
 struct EnemySpawnBox       { int x_min, x_max, y_min, y_max; };
 struct PlayerSpawnBox      { int x_min, x_max, y_min, y_max; };
 
@@ -30,6 +30,7 @@ class Game {
     int                     m_score = 0;
     int                     m_currentFrame = 0;
     int                     m_lastEnemySpawnTime = 0;
+    int                     m_lastSpecialWeaponUseTime = 0;
     bool                    paused  = false;
     bool                    running = true;
     std::shared_ptr<Entity> m_player;
