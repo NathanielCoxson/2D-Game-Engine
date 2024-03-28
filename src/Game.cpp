@@ -171,6 +171,7 @@ void Game::init(const std::string& config) {
             fin >> m_specialWeaponConfig.OT;
             fin >> m_specialWeaponConfig.C;
             fin >> m_specialWeaponConfig.L;
+            fin >> m_specialWeaponConfig.CD;
         } else {
             fin >> type;
         }
@@ -251,7 +252,10 @@ void Game::sUserInput() {
                     m_player->cInput->right = false;
                     break;
                 case sf::Keyboard::Space:
-                    spawnSpecialWeapon(m_player);
+                    if (m_currentFrame - m_lastSpecialWeaponUseTime >= m_specialWeaponConfig.CD) {
+                        spawnSpecialWeapon(m_player);
+                        m_lastSpecialWeaponUseTime = m_currentFrame;
+                    }
                     break;
                 default:
                     break;
