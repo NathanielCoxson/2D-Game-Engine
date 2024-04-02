@@ -251,7 +251,17 @@ void Game::sUserInput() {
                 case sf::Keyboard::D:
                     m_player->cInput->right = false;
                     break;
+                case sf::Keyboard::P:
+                    if (paused) {
+                        paused = false;
+                        running = true;
+                    } else {
+                        paused = true;
+                        running = false;
+                    }
+                    break;
                 case sf::Keyboard::Space:
+                    if (paused) break; 
                     if (m_currentFrame - m_lastSpecialWeaponUseTime >= m_specialWeaponConfig.CD) {
                         spawnSpecialWeapon(m_player);
                         m_lastSpecialWeaponUseTime = m_currentFrame;
@@ -375,6 +385,8 @@ void Game::sCollision() {
 }
 
 void Game::spawnPlayer() {
+    if (paused) return;
+
     m_player = m_entities.addEntity("player");
 
     m_player->cTransform = std::make_shared<CTransform>(
@@ -398,6 +410,8 @@ void Game::spawnPlayer() {
 }
 
 void Game::spawnEnemy() {
+    if (paused) return;
+
     std::shared_ptr<Entity> newEnemy = m_entities.addEntity("enemy");  
     
     // Determine random velocity settings for new enemy
@@ -432,6 +446,8 @@ void Game::spawnEnemy() {
 }
 
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
+    if (paused) return;
+
     int V = origin->cShape->circle.getPointCount();
 
     // Spawn 360 / V small enemy entities
@@ -464,6 +480,8 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> origin) {
 }
 
 void Game::spawnBullet(std::shared_ptr<Entity> origin, const Vec2& mousePos) {
+    if (paused) return;
+
     std::shared_ptr<Entity> newBullet = m_entities.addEntity("bullet");
 
     Vec2 diff(mousePos.x - origin->cTransform->pos.x, mousePos.y - origin->cTransform->pos.y);
@@ -499,6 +517,8 @@ void Game::spawnBullet(std::shared_ptr<Entity> origin, const Vec2& mousePos) {
 }
 
 void Game::spawnSpecialWeapon(std::shared_ptr<Entity> origin) {
+    if (paused) return;
+
     int interval = 360 / m_specialWeaponConfig.C; 
      
     for (int theta = interval; theta <= 360; theta += interval) {
@@ -555,12 +575,13 @@ void Game::run() {
 		m_window.clear(sf::Color::Black);
 
         // Systems
-        sMovement();
+        if (running) {
+            sMovement();
+            sEnemySpawner();
+            sCollision();
+        }
         sUserInput();
-        sEnemySpawner();
-        sCollision();
         sRender();
-
     }
 
 }
