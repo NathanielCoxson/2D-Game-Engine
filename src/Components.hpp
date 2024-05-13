@@ -65,5 +65,14 @@ public:
     bool right = false;
     bool shoot = false;
 
-    CInput() {}
+    CInput() {};
+};
+
+class CBoundingBox {
+
+public:
+    sf::Vector2f size = { 0.0, 0.0 }; 
+
+    CBoundingBox() {};
+    CBoundingBox(float w, float h): size(w, h) {}; 
 };
