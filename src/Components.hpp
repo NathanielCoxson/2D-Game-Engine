@@ -2,6 +2,7 @@
 
 #include "Vec2.hpp"
 #include <SFML/Graphics.hpp>
+#include "Animation.hpp"
 
 class CScore {
 
@@ -75,4 +76,16 @@ public:
 
     CBoundingBox() {};
     CBoundingBox(float w, float h): size(w, h) {}; 
+};
+
+class CAnimation {
+
+public:
+    Animation animation;
+
+    CAnimation() {};
+    CAnimation(const std::string& name, const sf::Texture& t)
+        : CAnimation(name, t, 1, 0) {};
+    CAnimation(const std::string& name, const sf::Texture& t, size_t frameCount, size_t speed)
+        : animation(name, t, frameCount, speed) {};
 };
