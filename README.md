@@ -12,7 +12,8 @@ The compile_commands.json file is already symlinked to the root directory,
 so all that is requried is running cmake to regenerate it when necessary.
 
 ## Example Games
-Note: Windows will require additional setup for SFML
+Note: Windows will require additional setup for SFML  
+
 Installation:
   - Checkout the branch for the game you want to play to your local machine.
   - If you are on Linux or MacOS, install the SFML library.
