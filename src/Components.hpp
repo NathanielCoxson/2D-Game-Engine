@@ -4,29 +4,40 @@
 #include <SFML/Graphics.hpp>
 #include "Animation.hpp"
 
-class CScore {
+class Component {
+
+public:
+    bool has = false;
+};
+
+class CScore : public Component {
 
 public:
     int score;
-    CScore(int s): score(s) {};
+    CScore(): CScore(0) {}
+    CScore(int s): score(s) {}
 };
 
-class CTransform {
+class CTransform : public Component {
     
 public: 
     Vec2  pos      = { 0.0, 0.0 };
+    Vec2  prevPos  = { 0.0, 0.0 };
     Vec2  velocity = { 0.0, 0.0 };
+    Vec2  scale    = { 1.0, 1.0 };
     float angle    = 0;
 
+    CTransform() {}
     CTransform(const Vec2& p, const Vec2& v, float a)
         : pos(p), velocity(v), angle(a) {}
 };
 
-class CShape {
+class CShape : public Component {
 
 public:
     sf::CircleShape circle;
 
+    CShape(): CShape(0, 0, sf::Color(0, 0, 0, 0), sf::Color(0, 0, 0, 0), 0) {}
     CShape( float            radius, 
             int              points, 
             const sf::Color& fill,
@@ -41,23 +52,25 @@ public:
     }
 };
 
-class CCollision {
+class CCollision : public Component {
 
 public:
     float radius = 0;
+    CCollision(): CCollision(0) {}
     CCollision(float r): radius(r) {}
 };
 
-class CLifespan {
+class CLifeSpan : public Component {
 
 public:
     int remaining = 0; // amount of lifespan remaining
     int total     = 0; // total initial lifespan
 
-    CLifespan(int t): total(t), remaining(t) {}
+    CLifeSpan() {}
+    CLifeSpan(int t): total(t), remaining(t) {}
 };
 
-class CInput {
+class CInput : public Component {
 
 public:
     bool up    = false;
@@ -66,26 +79,38 @@ public:
     bool right = false;
     bool shoot = false;
 
-    CInput() {};
+    CInput() {}
 };
 
-class CBoundingBox {
+class CBoundingBox : public Component {
 
 public:
     sf::Vector2f size = { 0.0, 0.0 }; 
 
-    CBoundingBox() {};
-    CBoundingBox(float w, float h): size(w, h) {}; 
+    CBoundingBox() {}
+    CBoundingBox(float w, float h): size(w, h) {}
 };
 
-class CAnimation {
+class CAnimation : public Component {
 
 public:
     Animation animation;
 
-    CAnimation() {};
+    CAnimation() {}
     CAnimation(const std::string& name, const sf::Texture& t)
         : CAnimation(name, t, 1, 0) {};
     CAnimation(const std::string& name, const sf::Texture& t, size_t frameCount, size_t speed)
-        : animation(name, t, frameCount, speed) {};
+        : animation(name, t, frameCount, speed) {}
+};
+
+class CGravity : public Component {
+
+public:
+    CGravity() {}
+};
+
+class CState : public Component {
+
+public:
+    CState() {}
 };

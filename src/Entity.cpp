@@ -1,7 +1,19 @@
 #include "Entity.hpp"
 
 Entity::Entity(const size_t id, const std::string& tag)
-    : m_id(id), m_tag(tag) {}
+    : m_id(id)
+    , m_tag(tag)
+    , m_components(
+        CScore(),
+        CTransform(),
+        CLifeSpan(),
+        CInput(),
+        CBoundingBox(),
+        CAnimation(),
+        CGravity(),
+        CState()
+    )
+{}
 
 bool Entity::isActive() const {
     return m_active;
