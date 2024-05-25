@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <memory>
 #include "Entity.hpp"
 
 class EntityManager {
