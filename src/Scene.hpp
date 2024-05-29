@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Action.hpp"
-#include "GameEngine.hpp"
 #include "EntityManager.hpp"
+#include "GameEngine.hpp"
 
 typedef std::map<int, std::string> ActionMap;
 

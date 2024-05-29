@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Action.hpp"
-#include "GameEngine.hpp"
 #include "Scene.hpp"
 #include <SFML/Graphics.hpp>
 

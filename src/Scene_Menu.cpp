@@ -4,7 +4,8 @@
 Scene_Menu::Scene_Menu(GameEngine* gameEngine)
     : Scene(gameEngine)
     , m_menuText(sf::Text())
-    , m_selectedMenuIndex(0) {
+    , m_selectedMenuIndex(0)
+    , m_menuStrings({ "Level 1", "Level 2", "Level 3" }){
     init();
 }
 
@@ -15,15 +16,17 @@ void Scene_Menu::init() {
     registerAction(sf::Keyboard::Enter, "PLAY");
     registerAction(sf::Keyboard::Escape, "QUIT");
 
+    m_menuText.setFillColor(sf::Color::White);
+    m_menuText.setCharacterSize(24);
+    m_menuText.setFont(m_game->assets().getFont("RobotoRegular"));
 }
 
 void Scene_Menu::update() {
     m_currentFrame += 1;
-
 }
 
 void Scene_Menu::onEnd() {
-
+    m_game->quit();
 }
 
 void Scene_Menu::sDoAction(const Action& action) {
@@ -49,6 +52,31 @@ void Scene_Menu::sRender() {
 
     m_game->window().clear(sf::Color::Black);
 
+    m_menuText.setString(m_title);
+    m_menuText.setPosition(sf::Vector2f(10, 10));
+    m_game->window().draw(m_menuText);
+
+    m_menuText.setString("Level 1");
+    m_menuText.setPosition(sf::Vector2f(10, 44));
+    if (m_selectedMenuIndex == 0) m_menuText.setFillColor(sf::Color::Green);
+    else m_menuText.setFillColor(sf::Color::White);
+    m_game->window().draw(m_menuText);
+
+    m_menuText.setString("Level 2");
+    m_menuText.setPosition(sf::Vector2f(10, 78));
+    if (m_selectedMenuIndex == 1) m_menuText.setFillColor(sf::Color::Green);
+    else m_menuText.setFillColor(sf::Color::White);
+    m_game->window().draw(m_menuText);
+
+    m_menuText.setString("Level 3");
+    m_menuText.setPosition(sf::Vector2f(10, 112));
+    if (m_selectedMenuIndex == 2) m_menuText.setFillColor(sf::Color::Green);
+    else m_menuText.setFillColor(sf::Color::White);
+    m_game->window().draw(m_menuText);
+
+    m_menuText.setString("UP:W\tDOWN:S\tPLAY:ENTER\tBACK:ESC");
+    m_menuText.setPosition(sf::Vector2f(10, height() - 34));
+    m_menuText.setFillColor(sf::Color::White);
     m_game->window().draw(m_menuText);
 
     m_game->window().display();
