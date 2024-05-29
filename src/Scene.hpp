@@ -6,6 +6,8 @@
 
 typedef std::map<int, std::string> ActionMap;
 
+class GameEngine;
+
 class Scene {
 
 protected:
