@@ -10,6 +10,10 @@ Scene::Scene(GameEngine* gameEngine) {
     m_actionMap = std::map<int, std::string>();
 }
 
+void Scene::doAction(const Action& action) {
+    sDoAction(action);
+}
+
 void Scene::simulate(const size_t frames) {
     for (int i = 0; i < frames; i++) {
         update();
