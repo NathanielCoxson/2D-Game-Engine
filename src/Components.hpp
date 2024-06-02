@@ -97,6 +97,7 @@ public:
     Animation animation;
 
     CAnimation() {}
+    CAnimation(Animation& animation): animation(animation) {};
     CAnimation(const std::string& name, const sf::Texture& t)
         : CAnimation(name, t, 1, 0) {};
     CAnimation(const std::string& name, const sf::Texture& t, size_t frameCount, size_t speed)
