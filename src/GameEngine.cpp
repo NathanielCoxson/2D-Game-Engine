@@ -1,5 +1,6 @@
 #include "GameEngine.hpp"
 #include "Scene_Menu.hpp"
+#include "Scene_Play.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -11,14 +12,7 @@ GameEngine::GameEngine(const std::string& path)
 }
 
 void GameEngine::init(const std::string& path) {
-    m_window.create(sf::VideoMode(800, 600), "Slime Game");
-    m_window.setFramerateLimit(60);
-
-    Scene_Menu menu_scene = Scene_Menu(this);
-    m_sceneMap[m_currentScene] = std::make_shared<Scene_Menu>(menu_scene);
-
     std::ifstream fin(path);
-
     while (!fin.eof()) {
         std::string asset_type;
         fin >> asset_type; 
@@ -40,6 +34,15 @@ void GameEngine::init(const std::string& path) {
             fin >> asset_type;
         }
     }
+
+    m_window.create(sf::VideoMode(800, 600), "Slime Game");
+    m_window.setFramerateLimit(60);
+
+    //Scene_Menu menu_scene = Scene_Menu(this);
+    //m_sceneMap[m_currentScene] = std::make_shared<Scene_Menu>(menu_scene);
+
+    Scene_Play test_play = Scene_Play(this, "asdf");
+    m_sceneMap[m_currentScene] = std::make_shared<Scene_Play>(test_play);
 }
 
 void GameEngine::update() {
@@ -88,6 +91,7 @@ void GameEngine::run() {
         if (m_running) {
             m_sceneMap[m_currentScene]->sRender(); 
         }
+
         sUserInput();
     }
 }

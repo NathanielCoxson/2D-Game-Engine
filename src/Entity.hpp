@@ -41,7 +41,7 @@ public:
     }
 
     template <typename T>
-    bool hasComponent() const {
+    bool hasComponent() {
         return getComponent<T>().has;
     }
 
