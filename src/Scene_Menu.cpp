@@ -1,4 +1,5 @@
 #include "Scene_Menu.hpp"
+#include "Scene_Play.hpp"
 #include "Action.hpp"
 
 Scene_Menu::Scene_Menu(GameEngine* gameEngine)
@@ -40,7 +41,8 @@ void Scene_Menu::sDoAction(const Action& action) {
             m_selectedMenuIndex = (m_selectedMenuIndex + 1) % m_menuStrings.size();
         } else if (action.getName() == "PLAY") {
             // change game engine scene to current index
-            // m_game->changeScene("Play", std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
+            //m_game->changeScene("level_1", std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
+            m_game->changeScene("level_1");
         } else if (action.getName() == "QUIT") {
             onEnd();
         }
