@@ -28,7 +28,7 @@ void Scene_Play::init(const std::string& levelPath) {
 }
 
 void Scene_Play::onEnd() {
-    m_game->window().close();
+    m_game->changeScene("menu");
 }
 
 void Scene_Play::loadLevel(const std::string& path) {
