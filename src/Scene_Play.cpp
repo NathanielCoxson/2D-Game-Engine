@@ -1,5 +1,7 @@
 #include "Scene_Play.hpp"
 #include "Vec2.hpp"
+#include <fstream>
+#include <iostream>
 
 Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
     : Scene(gameEngine)
@@ -31,16 +33,65 @@ void Scene_Play::onEnd() {
     m_game->changeScene("menu");
 }
 
+Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity) {
+    auto& Animation = entity->getComponent<CAnimation>();
+     
+    float x = m_gridSize.x * gridX + (Animation.animation.getSprite().getGlobalBounds().width / 2.0f);
+    float y = m_gridSize.y * gridY + (Animation.animation.getSprite().getGlobalBounds().height / 2.0f);
+    
+    return Vec2(x, m_game->window().getSize().y - y);
+}
+ 
 void Scene_Play::loadLevel(const std::string& path) {
-    m_player = m_entities.addEntity("player");
-    m_player->addComponent<CAnimation>(m_game->assets().getAnimation("SlimeJumpAnimation"));
-    m_player->getComponent<CAnimation>().animation.getSprite().setPosition(sf::Vector2f(100, 100));
 
-    m_player->addComponent<CTransform>();
-    m_player->getComponent<CTransform>().pos.x = 100;
-    m_player->getComponent<CTransform>().pos.y = 100;
+    std::ifstream fin(path);
+    while (!fin.eof()) {
+        std::string asset_type;
+        fin >> asset_type; 
 
-    m_player->addComponent<CInput>();
+        if (asset_type == "Tile") {
+            std::string N;
+            float X, Y, SX, SY;
+            fin >> N >> X >> Y >> SX >> SY;
+            
+            std::shared_ptr<Entity> tile = m_entities.addEntity(N);
+            auto& animation = tile->addComponent<CAnimation>(m_game->assets().getAnimation(N));
+
+            animation.animation.getSprite().setScale(SX, SY);
+
+            Vec2 pos = gridToMidPixel(X, Y, tile);
+            animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+        } else if (asset_type == "Dec") {
+            std::string N;
+            float X, Y, SX, SY;
+            fin >> N >> X >> Y >> SX >> SY;
+
+            std::shared_ptr<Entity> dec = m_entities.addEntity(N);
+            auto& animation = dec->addComponent<CAnimation>(m_game->assets().getAnimation(N));
+
+            animation.animation.getSprite().setScale(SX, SY);
+
+            Vec2 pos = gridToMidPixel(X, Y, dec);
+            animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+        } else if (asset_type == "Player") {
+            fin >> m_playerConfig.X >> m_playerConfig.Y;
+            fin >> m_playerConfig.CX >> m_playerConfig.CY;
+            fin >> m_playerConfig.SX >> m_playerConfig.SY >> m_playerConfig.MAXSPEED;
+            fin >> m_playerConfig.GRAVITY;
+            fin >> m_playerConfig.WEAPON;
+            fin >> m_playerConfig.XSCALE >> m_playerConfig.YSCALE;
+
+            m_player = m_entities.addEntity("Player");
+
+            auto& animation = m_player->addComponent<CAnimation>(m_game->assets().getAnimation("SlimeJumpAnimation"));
+            animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+
+            auto& transform = m_player->addComponent<CTransform>();
+            transform.pos = gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, m_player);
+        } else {
+            fin >> asset_type;
+        }
+    }
 }
 
 void Scene_Play::update() {
@@ -95,6 +146,13 @@ void Scene_Play::sRender() {
     m_game->window().clear(sf::Color::Black);
 
     //Draw
+    for (auto e: m_entities.getEntities()) {
+        if (e->tag() == "Player") continue;
+        if (e->hasComponent<CAnimation>()) {
+            m_game->window().draw(e->getComponent<CAnimation>().animation.getSprite());
+        }
+    }
+
     m_game->window().draw(m_player->getComponent<CAnimation>().animation.getSprite());
 
     //Display
