@@ -41,7 +41,7 @@ void GameEngine::init(const std::string& path) {
     Scene_Menu menu_scene = Scene_Menu(this);
     m_sceneMap[m_currentScene] = std::make_shared<Scene_Menu>(menu_scene);
 
-    Scene_Play level_1_scene = Scene_Play(this, "asdf");
+    Scene_Play level_1_scene = Scene_Play(this, "bin/level_1.txt");
     m_sceneMap["level_1"] = std::make_shared<Scene_Play>(level_1_scene);
 }
 

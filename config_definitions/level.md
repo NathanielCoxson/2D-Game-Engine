@@ -12,19 +12,23 @@ Note:
     left of the screen, and can be seen by pressing the 'G' key while the game is running.  
 
 Tile Entity:
-Tile N GX GY
+Tile N GX GY SX SY
  - Animation Name    N     std::string (Animation asset name for this tile)
  - GX Grid X Pos     GX    float
  - GY Grid Y Pos     GY    float
+ - X Scale           SX    float
+ - Y Scale           SY    float
 
 Decoration Entity:
-Dec N X Y
+Dec N X Y SX SY
  - Animation Name    N     std::string (Animation asset name for this tile)
  - X Position        X     float
  - Y Position        Y     float
+ - X Scale           SX    float
+ - Y Scale           SY    float
 
 Player:
-Player GX GY CW CH SX SY SM GY B
+Player GX GY CW CH SX SY SM GY B SCX SCY
  - Grid Pos X, Y       GX, GY    float, float (starting position of player)
  - BoundingBox W/H     CW, CH    float, float
  - Left/Right Speed    SX        float
@@ -32,3 +36,5 @@ Player GX GY CW CH SX SY SM GY B
  - Max Speed           SM        float
  - Gravity             GY        float
  - Bullet Animation    B         std::string (Animation asset to use for bullets)
+ - X Scale             SCX       float
+ - Y Scale             SCY       float

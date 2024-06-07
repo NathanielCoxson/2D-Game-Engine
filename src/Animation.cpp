@@ -4,7 +4,7 @@
 Animation::Animation() {}
 
 Animation::Animation(const std::string& name, const sf::Texture& t)
-    : Animation(name, t, 1, 0) {}
+    : Animation(name, t, 1, 1) {}
 
 Animation::Animation(const std::string& name, const sf::Texture& t, size_t frameCount, size_t speed)
     : m_name         (name)
