@@ -84,6 +84,8 @@ void GameEngine::run() {
     sf::Event event;
 
     while (m_window.isOpen()) {
+        sUserInput();
+
         update();
 
         // Systems
@@ -91,7 +93,6 @@ void GameEngine::run() {
             m_sceneMap[m_currentScene]->sRender(); 
         }
 
-        sUserInput();
     }
 }
 

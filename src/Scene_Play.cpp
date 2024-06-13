@@ -83,7 +83,7 @@ void Scene_Play::loadLevel(const std::string& path) {
 
             m_player = m_entities.addEntity("Player");
 
-            auto& animation = m_player->addComponent<CAnimation>(m_game->assets().getAnimation("SlimeJumpAnimation"));
+            auto& animation = m_player->addComponent<CAnimation>(m_game->assets().getAnimation("MegaManIdle"));
             animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
 
             auto& transform = m_player->addComponent<CTransform>();
@@ -110,19 +110,20 @@ void Scene_Play::update() {
 }
 
 void Scene_Play::sDoAction(const Action& action) {
+    auto& input = m_player->getComponent<CInput>();
     if (action.getType() == "START") {
-        if (action.getName() == "LEFT") {
-            m_player->getComponent<CInput>().left = true;
-        } else if (action.getName() == "RIGHT") {
-            m_player->getComponent<CInput>().right = true;
+        if (action.getName() == "LEFT" && !input.left) {
+            input.left = true;
+        } else if (action.getName() == "RIGHT" && !input.right) {
+            input.right = true;
         } else if (action.getName() == "QUIT") {
             onEnd();
         }
     } else if (action.getType() == "END") {
-        if (action.getName() == "LEFT") {
-            m_player->getComponent<CInput>().left = false;
-        } else if (action.getName() == "RIGHT") {
-            m_player->getComponent<CInput>().right = false;
+        if (action.getName() == "LEFT" && input.left) {
+            input.left = false;
+        } else if (action.getName() == "RIGHT" && input.right) {
+            input.right = false;
         }
     }
 }
@@ -130,12 +131,36 @@ void Scene_Play::sDoAction(const Action& action) {
 void Scene_Play::sMovement() {
     CInput input = m_player->getComponent<CInput>();
     CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
 
     if (input.left) {
         player_transform.pos.x -= 5;
-    } else if (input.right) {
-        player_transform.pos.x += 5;
+
+        if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x < 0) {
+            player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+        }
     }
+    if (input.right) {
+        player_transform.pos.x += 5;
+
+        if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x > 0) {
+            player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
+        }
+    } 
+
+    bool is_idle = !input.left && !input.right;
+    bool net_zero_horizontal_movement = input.left && input.right;
+    if (is_idle || net_zero_horizontal_movement) {
+        if (player_animation.animation.getName() != "MegaManIdle") {
+            float direction = player_animation.animation.getSprite().getScale().x / m_playerConfig.XSCALE;
+
+            player_animation.animation = m_game->assets().getAnimation("MegaManIdle");
+            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * direction, m_playerConfig.YSCALE);
+        }
+    }
+
 }
 
 void Scene_Play::sRender() {
