@@ -10,7 +10,7 @@ TEST_CASE("CBoundingBox has correct initial size using default constructor.") {
 }
 
 TEST_CASE("CBoundingBox has correct initial size when width and height are provided.") {
-    CBoundingBox bb = CBoundingBox(1.0, 2.0);
+    CBoundingBox bb = CBoundingBox(Vec2(1.0, 2.0));
     
     CHECK(bb.size.x == 1.0);
     CHECK(bb.size.y == 2.0);
