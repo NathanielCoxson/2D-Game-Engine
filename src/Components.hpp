@@ -85,10 +85,13 @@ public:
 class CBoundingBox : public Component {
 
 public:
-    sf::Vector2f size = { 0.0, 0.0 }; 
+    Vec2 size = { 0.0, 0.0 }; 
+    Vec2 halfSize = { 0.0, 0.0 };
 
     CBoundingBox() {}
-    CBoundingBox(float w, float h): size(w, h) {}
+    CBoundingBox(float w, float h)
+        : size(w, h)
+        , halfSize(w / 2, h / 2) {}
 };
 
 class CAnimation : public Component {
