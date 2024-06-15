@@ -1,17 +1,16 @@
-Player 1 1 48 48 5 -20 20 0.75 Buster
-Tile Block 0 0
-Tile Block 0 1
-Tile Block 0 2
-Tile Block 0 3
-Tile Block 0 4
-Tile Block 0 5
-Tile Block 0 6
-Tile Block 0 7
-Tile Block 0 8
-Tile Block 0 9
-Tile Block 0 10
-Tile Block 2 5
-Tile Block 2 6
-Tile Block 2 7
-Tile Block 2 8
-Dec House 1 0
+Player 1 1 48 48 5 -20 20 0.75 Buster 2 2
+Tile Block 0 0 4 4
+Tile Block 1 0 4 4
+Tile Block 2 0 4 4
+Tile Block 3 0 4 4
+Tile Block 4 0 4 4
+Tile Block 5 0 4 4
+Tile Block 6 0 4 4
+Tile Block 7 0 4 4
+Tile Block 8 0 4 4
+Tile Block 9 0 4 4
+Tile Block 5 3 4 4
+Tile Block 6 3 4 4
+Tile Block 7 3 4 4
+Tile Block 8 3 4 4
+Dec House 0 1 2 2 
