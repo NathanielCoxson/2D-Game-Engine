@@ -12,12 +12,12 @@ Vec2 Physics::GetOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
     CBoundingBox& bBoundingBox = b->getComponent<CBoundingBox>();
 
     float x1 = aTransform.pos.x, x2 = bTransform.pos.x;
-    float y1 = aTransform.pos.x, y2 = bTransform.pos.x;
+    float y1 = aTransform.pos.y, y2 = bTransform.pos.y;
 
-    float w1 = aBoundingBox.halfSize.x * aTransform.scale.x;
-    float w2 = bBoundingBox.halfSize.x * bTransform.scale.x;
-    float h1 = aBoundingBox.halfSize.y * aTransform.scale.y;
-    float h2 = bBoundingBox.halfSize.y * bTransform.scale.y;
+    float w1 = aBoundingBox.halfSize.x;
+    float w2 = bBoundingBox.halfSize.x;
+    float h1 = aBoundingBox.halfSize.y;
+    float h2 = bBoundingBox.halfSize.y;
 
     Vec2 delta = Vec2(std::abs(x1 - x2), std::abs(y1 - y2));
     float ox = w1 + w2 - delta.x;
@@ -37,12 +37,12 @@ Vec2 Physics::GetPreviousOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Enti
     CBoundingBox& bBoundingBox = b->getComponent<CBoundingBox>();
 
     float x1 = aTransform.prevPos.x, x2 = bTransform.prevPos.x;
-    float y1 = aTransform.prevPos.x, y2 = bTransform.prevPos.x;
+    float y1 = aTransform.prevPos.y, y2 = bTransform.prevPos.y;
 
-    float w1 = aBoundingBox.halfSize.x * aTransform.scale.x;
-    float w2 = bBoundingBox.halfSize.x * bTransform.scale.x;
-    float h1 = aBoundingBox.halfSize.y * aTransform.scale.y;
-    float h2 = bBoundingBox.halfSize.y * bTransform.scale.y;
+    float w1 = aBoundingBox.halfSize.x;
+    float w2 = bBoundingBox.halfSize.x;
+    float h1 = aBoundingBox.halfSize.y;
+    float h2 = bBoundingBox.halfSize.y;
 
     Vec2 delta = Vec2(std::abs(x1 - x2), std::abs(y1 - y2));
     float ox = w1 + w2 - delta.x;

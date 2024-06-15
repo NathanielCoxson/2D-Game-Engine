@@ -33,7 +33,7 @@ protected:
     void sAnimation();
     void sMovement();
     void sEnemySpawner();
-    void sCollition();
+    void sCollision();
     void sDebug();
 
 public:
