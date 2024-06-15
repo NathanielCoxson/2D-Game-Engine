@@ -29,7 +29,7 @@ public:
 
     CTransform() {}
     CTransform(const Vec2& p, const Vec2& v, float a)
-        : pos(p), velocity(v), angle(a) {}
+        : pos(p), prevPos(p), velocity(v), angle(a) {}
 };
 
 class CShape : public Component {
@@ -110,11 +110,16 @@ public:
 class CGravity : public Component {
 
 public:
+    float gravity;
+
     CGravity() {}
+    CGravity(float g): gravity(g) {};
 };
 
 class CState : public Component {
 
 public:
+    bool on_ground = true;
+    int jump_frame_count = 0;
     CState() {}
 };

@@ -2,6 +2,7 @@
 #include "Vec2.hpp"
 #include <fstream>
 #include <iostream>
+#include "Physics.hpp"
 
 Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
     : Scene(gameEngine)
@@ -61,6 +62,11 @@ void Scene_Play::loadLevel(const std::string& path) {
 
             Vec2 pos = gridToMidPixel(X, Y, tile);
             animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+
+            auto& bb = tile->addComponent<CBoundingBox>(Vec2(m_gridSize.x, m_gridSize.y));
+
+            auto& transform = tile->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            transform.scale = Vec2(SX, SY);
         } else if (asset_type == "Dec") {
             std::string N;
             float X, Y, SX, SY;
@@ -86,8 +92,15 @@ void Scene_Play::loadLevel(const std::string& path) {
             auto& animation = m_player->addComponent<CAnimation>(m_game->assets().getAnimation("MegaManIdle"));
             animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
 
-            auto& transform = m_player->addComponent<CTransform>();
-            transform.pos = gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, m_player);
+            Vec2 pos = gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, m_player);
+            auto& transform = m_player->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            transform.scale = Vec2(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+
+            auto& bb = m_player->addComponent<CBoundingBox>(Vec2(m_playerConfig.CX, m_playerConfig.CY));
+
+            auto& state = m_player->addComponent<CState>();
+
+            auto& gravity = m_player->addComponent<CGravity>(m_playerConfig.GRAVITY);
         } else {
             fin >> asset_type;
         }
@@ -97,6 +110,7 @@ void Scene_Play::loadLevel(const std::string& path) {
 void Scene_Play::update() {
     m_entities.update();
     sMovement();
+    sCollision();
 
     CAnimation& player_animation = m_player->getComponent<CAnimation>();
     CTransform& player_transform = m_player->getComponent<CTransform>();
@@ -116,6 +130,8 @@ void Scene_Play::sDoAction(const Action& action) {
             input.left = true;
         } else if (action.getName() == "RIGHT" && !input.right) {
             input.right = true;
+        } else if (action.getName() == "JUMP") {
+            input.up = true;
         } else if (action.getName() == "QUIT") {
             onEnd();
         }
@@ -124,6 +140,8 @@ void Scene_Play::sDoAction(const Action& action) {
             input.left = false;
         } else if (action.getName() == "RIGHT" && input.right) {
             input.right = false;
+        } else if (action.getName() == "JUMP") {
+            input.up = false;
         }
     }
 }
@@ -132,9 +150,12 @@ void Scene_Play::sMovement() {
     CInput input = m_player->getComponent<CInput>();
     CTransform& player_transform = m_player->getComponent<CTransform>();
     CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    CState&     player_state = m_player->getComponent<CState>();
+    CGravity&   player_gravity = m_player->getComponent<CGravity>();
 
+    Vec2 player_velocity(0, m_player->getComponent<CTransform>().velocity.y);
     if (input.left) {
-        player_transform.pos.x -= 5;
+        player_velocity.x -= m_playerConfig.SX;
 
         if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x < 0) {
             player_animation.animation = m_game->assets().getAnimation("MegaManRun");
@@ -142,13 +163,38 @@ void Scene_Play::sMovement() {
         }
     }
     if (input.right) {
-        player_transform.pos.x += 5;
+        player_velocity.x += m_playerConfig.SX;
 
         if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x > 0) {
             player_animation.animation = m_game->assets().getAnimation("MegaManRun");
             player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
         }
     } 
+    // Add initial velocity if jump key is pressed
+    if (input.up && player_state.on_ground) {
+        player_velocity.y = m_playerConfig.SY;
+    }
+    // Set velocity to 0 if jump key is released
+    if (!input.up && !player_state.on_ground) {
+        if (player_velocity.y < 0) player_velocity.y = 0;
+    }
+    player_transform.velocity = player_velocity;
+
+    for (auto e: m_entities.getEntities()) {
+        if (e->hasComponent<CTransform>()) {
+            if (e->hasComponent<CGravity>() && !e->getComponent<CState>().on_ground) {
+                e->getComponent<CTransform>().velocity.y += e->getComponent<CGravity>().gravity;
+            }
+
+            // Cap speeds to maxspeed
+            auto& t = e->getComponent<CTransform>();
+            if (t.velocity.x > m_playerConfig.MAXSPEED)      t.velocity.x = m_playerConfig.MAXSPEED;
+            if (t.velocity.y > m_playerConfig.MAXSPEED)      t.velocity.y = m_playerConfig.MAXSPEED;
+            if (t.velocity.x < m_playerConfig.MAXSPEED * -1) t.velocity.x = m_playerConfig.MAXSPEED * -1;
+            if (t.velocity.y < m_playerConfig.MAXSPEED * -1) t.velocity.y = m_playerConfig.MAXSPEED * -1;
+            e->getComponent<CTransform>().pos += e->getComponent<CTransform>().velocity;
+        }
+    }
 
     bool is_idle = !input.left && !input.right;
     bool net_zero_horizontal_movement = input.left && input.right;
@@ -160,7 +206,36 @@ void Scene_Play::sMovement() {
             player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * direction, m_playerConfig.YSCALE);
         }
     }
+    if (!player_state.on_ground) {
+        float direction = player_animation.animation.getSprite().getScale().x / m_playerConfig.XSCALE;
 
+        player_animation.animation = m_game->assets().getAnimation("MegaManJump");
+        player_animation.animation.getSprite().setScale(player_transform.scale.x * direction, player_transform.scale.y);
+    }
+
+}
+
+void Scene_Play::sAnimation() {
+
+}
+
+void Scene_Play::sCollision() {
+    CState&     player_state = m_player->getComponent<CState>();
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+
+    player_state.on_ground = false;
+    for (auto tile: m_entities.getEntities("Block")) {
+        Vec2 overlap = Physics::GetOverlap(m_player, tile);
+        if (overlap.y >= 0 && overlap.x >= 0) {
+            auto& transform = tile->getComponent<CTransform>();
+            player_state.on_ground = true;
+            player_transform.pos.y -= overlap.y;
+            player_transform.velocity.y = 0;
+            //std::cout << overlap.y << " " << overlap.x << "\t" << transform.pos.x << " " << transform.pos.y << "\t" << player_transform.pos.x << " " << player_transform.pos.y << "\t"  << tile->id() << " " << player_state.on_ground << "\n";
+            return;
+        }
+        
+    }
 }
 
 void Scene_Play::sRender() {
@@ -172,9 +247,33 @@ void Scene_Play::sRender() {
 
     //Draw
     for (auto e: m_entities.getEntities()) {
-        if (e->tag() == "Player") continue;
+        if (e->tag() == "Player") {
+            auto& transform = e->getComponent<CTransform>();
+            auto& bb = e->getComponent<CBoundingBox>();
+            sf::RectangleShape outline;
+            outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
+            outline.setOrigin(sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
+            outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            outline.setOutlineThickness(2);
+            outline.setOutlineColor(sf::Color::Blue);
+            outline.setFillColor(sf::Color::Transparent);
+            m_game->window().draw(outline);
+            continue;
+        } 
         if (e->hasComponent<CAnimation>()) {
             m_game->window().draw(e->getComponent<CAnimation>().animation.getSprite());
+        }
+        if (e->hasComponent<CBoundingBox>()) {
+            auto& transform = e->getComponent<CTransform>();
+            auto& bb = e->getComponent<CBoundingBox>();
+            sf::RectangleShape outline;
+            outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
+            outline.setOrigin(sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
+            outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            outline.setOutlineThickness(2);
+            outline.setOutlineColor(sf::Color::Blue);
+            outline.setFillColor(sf::Color::Transparent);
+            m_game->window().draw(outline);
         }
     }
 
