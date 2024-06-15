@@ -111,13 +111,14 @@ void Scene_Play::update() {
     m_entities.update();
     sMovement();
     sCollision();
-
-    CAnimation& player_animation = m_player->getComponent<CAnimation>();
-    CTransform& player_transform = m_player->getComponent<CTransform>();
-    player_animation.animation.getSprite().setPosition(sf::Vector2f(player_transform.pos.x, player_transform.pos.y));
+    sAnimation();
 
     for (auto e: m_entities.getEntities()) {
         if (e->hasComponent<CAnimation>()) {
+            if (e->hasComponent<CTransform>()) {
+                Vec2 pos = e->getComponent<CTransform>().pos;
+                e->getComponent<CAnimation>().animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+            }
             e->getComponent<CAnimation>().animation.update();
         }
     }
@@ -134,7 +135,7 @@ void Scene_Play::sDoAction(const Action& action) {
             input.up = true;
         } else if (action.getName() == "QUIT") {
             onEnd();
-        }
+        } 
     } else if (action.getType() == "END") {
         if (action.getName() == "LEFT" && input.left) {
             input.left = false;
@@ -142,6 +143,12 @@ void Scene_Play::sDoAction(const Action& action) {
             input.right = false;
         } else if (action.getName() == "JUMP") {
             input.up = false;
+        } else if (action.getName() == "TOGGLE_COLLISION") {
+            if (m_drawCollision) m_drawCollision = false;
+            else m_drawCollision = true;
+        } else if (action.getName() == "TOGGLE_TEXTURE") {
+            if (m_drawTextures) m_drawTextures = false;
+            else m_drawTextures = true;
         }
     }
 }
@@ -192,6 +199,7 @@ void Scene_Play::sMovement() {
             if (t.velocity.y > m_playerConfig.MAXSPEED)      t.velocity.y = m_playerConfig.MAXSPEED;
             if (t.velocity.x < m_playerConfig.MAXSPEED * -1) t.velocity.x = m_playerConfig.MAXSPEED * -1;
             if (t.velocity.y < m_playerConfig.MAXSPEED * -1) t.velocity.y = m_playerConfig.MAXSPEED * -1;
+            e->getComponent<CTransform>().prevPos = e->getComponent<CTransform>().pos;
             e->getComponent<CTransform>().pos += e->getComponent<CTransform>().velocity;
         }
     }
@@ -226,12 +234,32 @@ void Scene_Play::sCollision() {
     player_state.on_ground = false;
     for (auto tile: m_entities.getEntities("Block")) {
         Vec2 overlap = Physics::GetOverlap(m_player, tile);
-        if (overlap.y >= 0 && overlap.x >= 0) {
-            auto& transform = tile->getComponent<CTransform>();
+        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, tile);
+
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        bool vertical_collision = prevOverlap.x > 0;
+        bool horizontal_collision = prevOverlap.y > 0;
+        bool came_from_above = player_transform.pos.y <= tile->getComponent<CTransform>().pos.y;
+        bool came_from_below = player_transform.pos.y >= tile->getComponent<CTransform>().pos.y;
+        bool came_from_left  = player_transform.pos.x <= tile->getComponent<CTransform>().pos.x;
+        bool came_from_right = player_transform.pos.x >= tile->getComponent<CTransform>().pos.x;
+
+        if (overlapping && vertical_collision && came_from_above) {
             player_state.on_ground = true;
             player_transform.pos.y -= overlap.y;
             player_transform.velocity.y = 0;
-            //std::cout << overlap.y << " " << overlap.x << "\t" << transform.pos.x << " " << transform.pos.y << "\t" << player_transform.pos.x << " " << player_transform.pos.y << "\t"  << tile->id() << " " << player_state.on_ground << "\n";
+            return;
+        } else if (overlapping && vertical_collision && came_from_below) {
+            player_transform.pos.y += overlap.y;
+            player_transform.velocity.y = 0;
+            return;
+        } else if (overlapping && horizontal_collision && came_from_left) {
+            player_transform.pos.x -= overlap.x;
+            player_transform.velocity.x = 0;
+            return;
+        } else if (overlapping && horizontal_collision && came_from_right) {
+            player_transform.pos.x += overlap.x;
+            player_transform.velocity.x = 0;
             return;
         }
         
@@ -247,37 +275,26 @@ void Scene_Play::sRender() {
 
     //Draw
     for (auto e: m_entities.getEntities()) {
-        if (e->tag() == "Player") {
-            auto& transform = e->getComponent<CTransform>();
-            auto& bb = e->getComponent<CBoundingBox>();
-            sf::RectangleShape outline;
-            outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
-            outline.setOrigin(sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
-            outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
-            outline.setOutlineThickness(2);
-            outline.setOutlineColor(sf::Color::Blue);
-            outline.setFillColor(sf::Color::Transparent);
-            m_game->window().draw(outline);
-            continue;
-        } 
         if (e->hasComponent<CAnimation>()) {
-            m_game->window().draw(e->getComponent<CAnimation>().animation.getSprite());
+            if (m_drawTextures) {
+                m_game->window().draw(e->getComponent<CAnimation>().animation.getSprite());
+            }
         }
         if (e->hasComponent<CBoundingBox>()) {
-            auto& transform = e->getComponent<CTransform>();
-            auto& bb = e->getComponent<CBoundingBox>();
-            sf::RectangleShape outline;
-            outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
-            outline.setOrigin(sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
-            outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
-            outline.setOutlineThickness(2);
-            outline.setOutlineColor(sf::Color::Blue);
-            outline.setFillColor(sf::Color::Transparent);
-            m_game->window().draw(outline);
+            if (m_drawCollision) {
+                auto& transform = e->getComponent<CTransform>();
+                auto& bb = e->getComponent<CBoundingBox>();
+                sf::RectangleShape outline;
+                outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
+                outline.setOrigin(sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
+                outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+                outline.setOutlineThickness(2);
+                outline.setOutlineColor(sf::Color::Blue);
+                outline.setFillColor(sf::Color::Transparent);
+                m_game->window().draw(outline);
+            }
         }
     }
-
-    m_game->window().draw(m_player->getComponent<CAnimation>().animation.getSprite());
 
     //Display
     m_game->window().display();
