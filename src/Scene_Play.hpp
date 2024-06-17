@@ -23,6 +23,8 @@ protected:
     bool                    m_drawGrid = false;
     const Vec2              m_gridSize = { 64, 64 };
     sf::Text                m_gridText;
+    sf::View                m_playerView;
+    int                     m_levelWidth = 0;
 
     void init(const std::string& levelPath);
     void onEnd();

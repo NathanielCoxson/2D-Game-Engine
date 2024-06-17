@@ -1,8 +1,11 @@
 #include "Scene_Play.hpp"
 #include "Vec2.hpp"
+#include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>
 #include "Physics.hpp"
+#include <algorithm>
+#include <cmath>
 
 Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
     : Scene(gameEngine)
@@ -28,9 +31,12 @@ void Scene_Play::init(const std::string& levelPath) {
     m_gridText.setFont(m_game->assets().getFont("RobotoRegular"));
 
     loadLevel(m_levelPath);
+
+    m_playerView.setSize(sf::Vector2f(m_game->window().getSize().x, m_game->window().getSize().y));
 }
 
 void Scene_Play::onEnd() {
+    m_game->window().setView(m_game->window().getDefaultView());
     m_game->changeScene("menu");
 }
 
@@ -54,6 +60,8 @@ void Scene_Play::loadLevel(const std::string& path) {
             std::string N;
             float X, Y, SX, SY;
             fin >> N >> X >> Y >> SX >> SY;
+
+            if (int(X) > m_levelWidth) m_levelWidth = int(X);
             
             std::shared_ptr<Entity> tile = m_entities.addEntity(N);
             auto& animation = tile->addComponent<CAnimation>(m_game->assets().getAnimation(N));
@@ -71,6 +79,8 @@ void Scene_Play::loadLevel(const std::string& path) {
             std::string N;
             float X, Y, SX, SY;
             fin >> N >> X >> Y >> SX >> SY;
+
+            if (int(X) > m_levelWidth) m_levelWidth = int(X);
 
             std::shared_ptr<Entity> dec = m_entities.addEntity(N);
             auto& animation = dec->addComponent<CAnimation>(m_game->assets().getAnimation(N));
@@ -121,6 +131,17 @@ void Scene_Play::update() {
             }
             e->getComponent<CAnimation>().animation.update();
         }
+    }
+
+    // Center player view
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    float viewHalfWidth = m_playerView.getSize().x / 2.0f;
+    if (player_transform.pos.x - viewHalfWidth < 0) {
+        m_playerView.setCenter(m_game->window().getSize().x / 2.0f, m_game->window().getSize().y / 2.0f);
+    } else if (player_transform.pos.x + viewHalfWidth > m_levelWidth * m_gridSize.x) {
+        m_playerView.setCenter(m_levelWidth * m_gridSize.x - viewHalfWidth, m_game->window().getSize().y / 2.0f);
+    } else {
+        m_playerView.setCenter(sf::Vector2f(player_transform.pos.x, m_game->window().getSize().y / 2.0f));
     }
 }
 
@@ -297,6 +318,7 @@ void Scene_Play::sRender() {
     }
 
     //Display
+    m_game->window().setView(m_playerView);
     m_game->window().display();
 }
 
