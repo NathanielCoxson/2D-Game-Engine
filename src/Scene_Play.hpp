@@ -9,7 +9,7 @@
 
 class Scene_Play : public Scene {
     struct PlayerConfig {
-        float X, Y, CX, CY, SX, SY, MAXSPEED, JUMP, GRAVITY, XSCALE, YSCALE;
+        float X, Y, CX, CY, SX, SY, MAXSPEED, JUMP, GRAVITY, XSCALE, YSCALE, WEAPON_SPEED, WEAPON_LIFESPAN;
         std::string WEAPON;
     };
 
@@ -30,6 +30,8 @@ protected:
     void onEnd();
     void loadLevel(const std::string& path);
     Vec2 gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);
+
+    void spawnBullet();
 
     void sDoAction(const Action& action);
     void sAnimation();
