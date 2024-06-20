@@ -4,8 +4,6 @@
 #include <fstream>
 #include <iostream>
 #include "Physics.hpp"
-#include <algorithm>
-#include <cmath>
 
 Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
     : Scene(gameEngine)
@@ -23,9 +21,10 @@ void Scene_Play::init(const std::string& levelPath) {
     registerAction(sf::Keyboard::G,      "TOGGLE_GRID");
 
     // Gameplay
-    registerAction(sf::Keyboard::A,     "LEFT");
-    registerAction(sf::Keyboard::D,     "RIGHT");
-    registerAction(sf::Keyboard::Space, "JUMP");
+    registerAction(sf::Keyboard::A,      "LEFT");
+    registerAction(sf::Keyboard::D,      "RIGHT");
+    registerAction(sf::Keyboard::W,      "JUMP");
+    registerAction(sf::Keyboard::Space,  "SHOOT");
 
     m_gridText.setCharacterSize(12);
     m_gridText.setFont(m_game->assets().getFont("RobotoRegular"));
@@ -94,7 +93,7 @@ void Scene_Play::loadLevel(const std::string& path) {
             fin >> m_playerConfig.CX >> m_playerConfig.CY;
             fin >> m_playerConfig.SX >> m_playerConfig.SY >> m_playerConfig.MAXSPEED;
             fin >> m_playerConfig.GRAVITY;
-            fin >> m_playerConfig.WEAPON;
+            fin >> m_playerConfig.WEAPON >> m_playerConfig.WEAPON_SPEED >> m_playerConfig.WEAPON_LIFESPAN;
             fin >> m_playerConfig.XSCALE >> m_playerConfig.YSCALE;
 
             m_player = m_entities.addEntity("Player");
@@ -118,6 +117,7 @@ void Scene_Play::loadLevel(const std::string& path) {
 }
 
 void Scene_Play::update() {
+    m_currentFrame++;
     m_entities.update();
     sMovement();
     sCollision();
@@ -130,6 +130,20 @@ void Scene_Play::update() {
                 e->getComponent<CAnimation>().animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
             }
             e->getComponent<CAnimation>().animation.update();
+        }
+        if (e->hasComponent<CLifeSpan>()) {
+            e->getComponent<CLifeSpan>().remaining--;
+            if (e->tag() == "Bullet" && e->getComponent<CLifeSpan>().remaining <= 0) {
+                if (e->getComponent<CAnimation>().animation.getName() == "BulletExplosion") {
+                    if (e->getComponent<CAnimation>().animation.hasEnded()) {
+                        e->destroy();
+                    } 
+                } else {
+                    e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion"); 
+                    e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+                    e->getComponent<CTransform>().velocity = Vec2(0, 0);
+                }
+            } 
         }
     }
 
@@ -154,6 +168,11 @@ void Scene_Play::sDoAction(const Action& action) {
             input.right = true;
         } else if (action.getName() == "JUMP") {
             input.up = true;
+        } else if (action.getName() == "SHOOT") {
+            if (m_player->getComponent<CState>().can_shoot) {
+                spawnBullet(); 
+                m_player->getComponent<CState>().can_shoot = false;
+            }
         } else if (action.getName() == "QUIT") {
             onEnd();
         } 
@@ -164,6 +183,8 @@ void Scene_Play::sDoAction(const Action& action) {
             input.right = false;
         } else if (action.getName() == "JUMP") {
             input.up = false;
+        } else if (action.getName() == "SHOOT") {
+            m_player->getComponent<CState>().can_shoot = true;
         } else if (action.getName() == "TOGGLE_COLLISION") {
             if (m_drawCollision) m_drawCollision = false;
             else m_drawCollision = true;
@@ -322,4 +343,21 @@ void Scene_Play::sRender() {
     m_game->window().display();
 }
 
+void Scene_Play::spawnBullet() {
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    int direction = 1;
+    bool facing_left = player_animation.animation.getSprite().getScale().x > 0;
+    if (facing_left) direction = -1;
+    
+    std::shared_ptr<Entity> bullet = m_entities.addEntity("Bullet");
 
+    bullet->addComponent<CLifeSpan>(m_playerConfig.WEAPON_LIFESPAN);
+
+    bullet->addComponent<CBoundingBox>();
+
+    bullet->addComponent<CAnimation>(m_game->assets().getAnimation(m_playerConfig.WEAPON));
+    bullet->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+
+    bullet->addComponent<CTransform>(player_transform.pos, Vec2(m_playerConfig.WEAPON_SPEED * direction, 0), 0);
+}

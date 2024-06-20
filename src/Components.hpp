@@ -120,6 +120,7 @@ class CState : public Component {
 
 public:
     bool on_ground = true;
+    bool can_shoot = true;
     int jump_frame_count = 0;
     CState() {}
 };
