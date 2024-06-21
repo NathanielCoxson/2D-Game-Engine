@@ -41,3 +41,11 @@ const Vec2& Animation::getSize() const {
 sf::Sprite& Animation::getSprite() {
     return m_sprite;
 }
+
+bool Animation::isInfinite() const {
+    return m_infinite;
+}
+
+void Animation::setInfinite(bool is_infinite) {
+    m_infinite = is_infinite;
+}

@@ -125,25 +125,28 @@ void Scene_Play::update() {
 
     for (auto e: m_entities.getEntities()) {
         if (e->hasComponent<CAnimation>()) {
+            CAnimation& animation = e->getComponent<CAnimation>();
             if (e->hasComponent<CTransform>()) {
                 Vec2 pos = e->getComponent<CTransform>().pos;
-                e->getComponent<CAnimation>().animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+                animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
             }
-            e->getComponent<CAnimation>().animation.update();
+            animation.animation.update();
+
+            bool animationEnded = !animation.animation.isInfinite() && animation.animation.hasEnded();
+            if (animationEnded) {
+                e->destroy();
+                continue;
+            }
         }
         if (e->hasComponent<CLifeSpan>()) {
             e->getComponent<CLifeSpan>().remaining--;
             if (e->tag() == "Bullet" && e->getComponent<CLifeSpan>().remaining <= 0) {
-                if (e->getComponent<CAnimation>().animation.getName() == "BulletExplosion") {
-                    if (e->getComponent<CAnimation>().animation.hasEnded()) {
-                        e->destroy();
-                    } 
-                } else {
-                    e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion"); 
-                    e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
-                    e->getComponent<CTransform>().velocity = Vec2(0, 0);
-                }
-            } 
+                e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion"); 
+                e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+                e->getComponent<CAnimation>().animation.setInfinite(false);
+                e->getComponent<CTransform>().velocity = Vec2(0, 0);
+                e->removeComponent<CLifeSpan>();
+            }
         }
     }
 
@@ -294,6 +297,10 @@ void Scene_Play::sCollision() {
         } else if (overlapping && vertical_collision && came_from_below) {
             player_transform.pos.y += overlap.y;
             player_transform.velocity.y = 0;
+            tile->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
+            tile->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+            tile->getComponent<CAnimation>().animation.setInfinite(false);
+            tile->removeComponent<CBoundingBox>();
             return;
         } else if (overlapping && horizontal_collision && came_from_left) {
             player_transform.pos.x -= overlap.x;
