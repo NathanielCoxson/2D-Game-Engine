@@ -272,6 +272,13 @@ void Scene_Play::sAnimation() {
 
 }
 
+void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
+    e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
+    e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+    e->getComponent<CAnimation>().animation.setInfinite(false);
+    e->removeComponent<CBoundingBox>();
+}
+
 void Scene_Play::sCollision() {
     CState&     player_state = m_player->getComponent<CState>();
     CTransform& player_transform = m_player->getComponent<CTransform>();
@@ -293,25 +300,36 @@ void Scene_Play::sCollision() {
             player_state.on_ground = true;
             player_transform.pos.y -= overlap.y;
             player_transform.velocity.y = 0;
-            return;
+            continue;
         } else if (overlapping && vertical_collision && came_from_below) {
             player_transform.pos.y += overlap.y;
             player_transform.velocity.y = 0;
-            tile->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
-            tile->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
-            tile->getComponent<CAnimation>().animation.setInfinite(false);
-            tile->removeComponent<CBoundingBox>();
-            return;
+            destroyBlock(tile);
+            continue;
         } else if (overlapping && horizontal_collision && came_from_left) {
             player_transform.pos.x -= overlap.x;
             player_transform.velocity.x = 0;
-            return;
+            continue;
         } else if (overlapping && horizontal_collision && came_from_right) {
             player_transform.pos.x += overlap.x;
             player_transform.velocity.x = 0;
-            return;
+            continue;
         }
-        
+    }
+    for (auto bullet: m_entities.getEntities("Bullet")) {
+        for (auto tile: m_entities.getEntities("Block")) {
+            CTransform& bullet_transform = bullet->getComponent<CTransform>();
+            Vec2 overlap = Physics::GetOverlap(tile, bullet);
+            Vec2 prevOverlap = Physics::GetPreviousOverlap(tile, bullet);
+
+            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            bool vertical_collision = prevOverlap.x > 0;
+            bool horizontal_collision = prevOverlap.y > 0;
+            if (overlapping) {
+                bullet->destroy();
+                destroyBlock(tile);
+            }
+        }
     }
 }
 
@@ -361,7 +379,7 @@ void Scene_Play::spawnBullet() {
 
     bullet->addComponent<CLifeSpan>(m_playerConfig.WEAPON_LIFESPAN);
 
-    bullet->addComponent<CBoundingBox>();
+    bullet->addComponent<CBoundingBox>(Vec2(16, 16));
 
     bullet->addComponent<CAnimation>(m_game->assets().getAnimation(m_playerConfig.WEAPON));
     bullet->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);

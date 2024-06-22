@@ -4,7 +4,7 @@
 Vec2 Physics::GetOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
     bool a_is_valid = a->hasComponent<CTransform>() && a->hasComponent<CBoundingBox>();
     bool b_is_valid = b->hasComponent<CTransform>() && b->hasComponent<CBoundingBox>();
-    if (!(a_is_valid && b_is_valid)) return Vec2(0, 0);
+    if (!(a_is_valid && b_is_valid)) return Vec2(-1, -1);
 
     CTransform&   aTransform   = a->getComponent<CTransform>();  
     CTransform&   bTransform   = b->getComponent<CTransform>();  
@@ -29,7 +29,7 @@ Vec2 Physics::GetOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 Vec2 Physics::GetPreviousOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
     bool a_is_valid = a->hasComponent<CTransform>() && a->hasComponent<CBoundingBox>();
     bool b_is_valid = b->hasComponent<CTransform>() && b->hasComponent<CBoundingBox>();
-    if (!(a_is_valid && b_is_valid)) return Vec2(0, 0);
+    if (!(a_is_valid && b_is_valid)) return Vec2(-1, -1);
 
     CTransform&   aTransform   = a->getComponent<CTransform>();  
     CTransform&   bTransform   = b->getComponent<CTransform>();  
