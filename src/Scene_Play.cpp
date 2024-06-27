@@ -338,7 +338,7 @@ void Scene_Play::sRender() {
     update();
 
     //Clear
-    m_game->window().clear(sf::Color::Black);
+    m_game->window().clear(m_backgroundColor);
 
     //Draw
     for (auto e: m_entities.getEntities()) {
