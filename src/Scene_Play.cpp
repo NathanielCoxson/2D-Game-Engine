@@ -62,16 +62,23 @@ void Scene_Play::loadLevel(const std::string& path) {
 
             if (int(X) > m_levelWidth) m_levelWidth = int(X);
             
+            // Animation
             std::shared_ptr<Entity> tile = m_entities.addEntity(N);
             auto& animation = tile->addComponent<CAnimation>(m_game->assets().getAnimation(N));
-
             animation.animation.getSprite().setScale(SX, SY);
 
+            // Sprite positioning
             Vec2 pos = gridToMidPixel(X, Y, tile);
             animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
 
-            auto& bb = tile->addComponent<CBoundingBox>(Vec2(m_gridSize.x, m_gridSize.y));
+            // Bounding boxes
+            if (N == "Block") {
+                tile->addComponent<CBoundingBox>(Vec2(m_gridSize.x, m_gridSize.y));
+            } else if (N == "Flagpole") {
+                tile->addComponent<CBoundingBox>(Vec2(animation.animation.getSize().x * SX / 2.0f, animation.animation.getSize().y * SY / 1.25f));
+            }
 
+            // Transforms
             auto& transform = tile->addComponent<CTransform>(pos, Vec2(0, 0), 0);
             transform.scale = Vec2(SX, SY);
         } else if (asset_type == "Dec") {
@@ -119,9 +126,12 @@ void Scene_Play::loadLevel(const std::string& path) {
 void Scene_Play::update() {
     m_currentFrame++;
     m_entities.update();
-    sMovement();
-    sCollision();
-    sAnimation();
+
+    if (!m_levelEnded) {
+        sMovement();
+        sCollision();
+        sAnimation();
+    }
 
     for (auto e: m_entities.getEntities()) {
         if (e->hasComponent<CAnimation>()) {
@@ -155,8 +165,8 @@ void Scene_Play::update() {
     float viewHalfWidth = m_playerView.getSize().x / 2.0f;
     if (player_transform.pos.x - viewHalfWidth < 0) {
         m_playerView.setCenter(m_game->window().getSize().x / 2.0f, m_game->window().getSize().y / 2.0f);
-    } else if (player_transform.pos.x + viewHalfWidth > m_levelWidth * m_gridSize.x) {
-        m_playerView.setCenter(m_levelWidth * m_gridSize.x - viewHalfWidth, m_game->window().getSize().y / 2.0f);
+    } else if (player_transform.pos.x + viewHalfWidth > (m_levelWidth + 1) * m_gridSize.x) {
+        m_playerView.setCenter((m_levelWidth + 1) * m_gridSize.x - viewHalfWidth, m_game->window().getSize().y / 2.0f);
     } else {
         m_playerView.setCenter(sf::Vector2f(player_transform.pos.x, m_game->window().getSize().y / 2.0f));
     }
@@ -323,12 +333,20 @@ void Scene_Play::sCollision() {
             Vec2 prevOverlap = Physics::GetPreviousOverlap(tile, bullet);
 
             bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-            bool vertical_collision = prevOverlap.x > 0;
-            bool horizontal_collision = prevOverlap.y > 0;
             if (overlapping) {
                 bullet->destroy();
                 destroyBlock(tile);
             }
+        }
+    }
+    for (auto flagpole: m_entities.getEntities("Flagpole")) {
+        Vec2 overlap = Physics::GetOverlap(m_player, flagpole);
+        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, flagpole);
+        
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        if (overlapping) {
+            player_state.on_flagpole = true;
+            m_levelEnded = true;
         }
     }
 }
@@ -361,6 +379,16 @@ void Scene_Play::sRender() {
                 m_game->window().draw(outline);
             }
         }
+    }
+    if (m_levelEnded) {
+        sf::Text endingText;
+        endingText.setString("You Win!");
+        endingText.setFont(m_game->assets().getFont("RobotoRegular"));
+        endingText.setCharacterSize(32);
+        endingText.setFillColor(sf::Color::White);
+        endingText.setOrigin(endingText.getGlobalBounds().width / 2.0f, endingText.getGlobalBounds().height / 2.0f);
+        endingText.setPosition(m_playerView.getCenter().x, m_playerView.getCenter().y);
+        m_game->window().draw(endingText);
     }
 
     //Display
