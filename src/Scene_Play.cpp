@@ -95,6 +95,11 @@ void Scene_Play::loadLevel(const std::string& path) {
 
             Vec2 pos = gridToMidPixel(X, Y, dec);
             animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+
+            if (N == "Slime") {
+                dec->addComponent<CBoundingBox>(Vec2(64, 64));
+                dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            }
         } else if (asset_type == "Player") {
             fin >> m_playerConfig.X >> m_playerConfig.Y;
             fin >> m_playerConfig.CX >> m_playerConfig.CY;
@@ -326,6 +331,22 @@ void Scene_Play::sCollision() {
             continue;
         }
     }
+    for (auto slime: m_entities.getEntities("Slime")) {
+        Vec2 overlap = Physics::GetOverlap(m_player, slime);
+        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, slime);
+
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        bool vertical_collision = prevOverlap.x > 0;
+        bool horizontal_collision = prevOverlap.y > 0;
+        bool came_from_above = player_transform.pos.y <= slime->getComponent<CTransform>().pos.y;
+
+        if (overlapping && vertical_collision && came_from_above) {
+            slime->destroy();
+            continue;
+        } else if (overlapping) {
+            m_player->destroy();
+        }
+    }
     for (auto bullet: m_entities.getEntities("Bullet")) {
         for (auto tile: m_entities.getEntities("Block")) {
             CTransform& bullet_transform = bullet->getComponent<CTransform>();
@@ -336,6 +357,20 @@ void Scene_Play::sCollision() {
             if (overlapping) {
                 bullet->destroy();
                 destroyBlock(tile);
+            }
+        }
+        for (auto slime: m_entities.getEntities("Slime")) {
+            CTransform& bullet_transform = bullet->getComponent<CTransform>();
+            Vec2 overlap = Physics::GetOverlap(slime, bullet);
+            Vec2 prevOverlap = Physics::GetPreviousOverlap(slime, bullet);
+
+            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            if (overlapping) {
+                bullet->destroy();
+                slime->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
+                slime->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+                slime->getComponent<CAnimation>().animation.setInfinite(false);
+                slime->removeComponent<CBoundingBox>();
             }
         }
     }
