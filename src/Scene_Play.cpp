@@ -98,7 +98,7 @@ void Scene_Play::loadLevel(const std::string& path) {
 
             if (N == "Slime") {
                 dec->addComponent<CBoundingBox>(Vec2(64, 64));
-                dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+                dec->addComponent<CTransform>(pos, Vec2(2, 0), 0);
             }
         } else if (asset_type == "Player") {
             fin >> m_playerConfig.X >> m_playerConfig.Y;
@@ -332,6 +332,7 @@ void Scene_Play::sCollision() {
         }
     }
     for (auto slime: m_entities.getEntities("Slime")) {
+        // Player collision checking
         Vec2 overlap = Physics::GetOverlap(m_player, slime);
         Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, slime);
 
@@ -345,6 +346,28 @@ void Scene_Play::sCollision() {
             continue;
         } else if (overlapping) {
             m_player->destroy();
+        }
+
+        // Block collision checking
+        for (auto block: m_entities.getEntities("Block")) {
+            Vec2 overlap = Physics::GetOverlap(block, slime);
+            Vec2 prevOverlap = Physics::GetPreviousOverlap(block, slime);
+
+            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            bool horizontal_collision = prevOverlap.y > 0;
+            if (overlapping && horizontal_collision) {
+                slime->getComponent<CTransform>().velocity.x *= -1;
+            }
+        }
+
+        // Level boundary collision checking
+        CTransform&   transform = slime->getComponent<CTransform>();
+        CBoundingBox& boundingBox = slime->getComponent<CBoundingBox>();
+        if (
+            transform.pos.x - boundingBox.halfSize.x <= 0 ||
+            transform.pos.x + boundingBox.halfSize.x >= (m_levelWidth + 1) * m_gridSize.x
+        ) {
+            transform.velocity.x *= -1;
         }
     }
     for (auto bullet: m_entities.getEntities("Bullet")) {
@@ -370,6 +393,7 @@ void Scene_Play::sCollision() {
                 slime->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
                 slime->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
                 slime->getComponent<CAnimation>().animation.setInfinite(false);
+                slime->getComponent<CTransform>().velocity = Vec2(0, 0);
                 slime->removeComponent<CBoundingBox>();
             }
         }
