@@ -223,19 +223,9 @@ void Scene_Play::sMovement() {
     Vec2 player_velocity(0, m_player->getComponent<CTransform>().velocity.y);
     if (input.left) {
         player_velocity.x -= m_playerConfig.SX;
-
-        if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x < 0) {
-            player_animation.animation = m_game->assets().getAnimation("MegaManRun");
-            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
-        }
     }
     if (input.right) {
         player_velocity.x += m_playerConfig.SX;
-
-        if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x > 0) {
-            player_animation.animation = m_game->assets().getAnimation("MegaManRun");
-            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
-        }
     } 
     // Add initial velocity if jump key is pressed
     if (input.up && player_state.on_ground) {
@@ -273,6 +263,17 @@ void Scene_Play::sAnimation() {
 
     bool is_idle = !input.left && !input.right;
     bool net_zero_horizontal_movement = input.left && input.right;
+    bool player_has_run_animation = player_animation.animation.getName() == "MegaManRun";
+    bool player_facing_left = player_animation.animation.getSprite().getScale().x > 0;
+
+    if (input.left && (!player_has_run_animation || !player_facing_left)) {
+        player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+        player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+    }
+    if (input.right && (!player_has_run_animation || player_facing_left)) {
+        player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+        player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
+    } 
 
     if (is_idle || net_zero_horizontal_movement) {
         if (player_animation.animation.getName() != "MegaManIdle") {
