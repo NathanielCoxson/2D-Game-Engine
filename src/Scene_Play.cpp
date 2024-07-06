@@ -263,9 +263,17 @@ void Scene_Play::sMovement() {
             e->getComponent<CTransform>().pos += e->getComponent<CTransform>().velocity;
         }
     }
+}
+
+void Scene_Play::sAnimation() {
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    CState&     player_state     = m_player->getComponent<CState>();
+    CInput&     input            = m_player->getComponent<CInput>();
 
     bool is_idle = !input.left && !input.right;
     bool net_zero_horizontal_movement = input.left && input.right;
+
     if (is_idle || net_zero_horizontal_movement) {
         if (player_animation.animation.getName() != "MegaManIdle") {
             float direction = player_animation.animation.getSprite().getScale().x / m_playerConfig.XSCALE;
@@ -280,11 +288,6 @@ void Scene_Play::sMovement() {
         player_animation.animation = m_game->assets().getAnimation("MegaManJump");
         player_animation.animation.getSprite().setScale(player_transform.scale.x * direction, player_transform.scale.y);
     }
-
-}
-
-void Scene_Play::sAnimation() {
-
 }
 
 void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
