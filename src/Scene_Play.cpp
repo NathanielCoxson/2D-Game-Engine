@@ -223,19 +223,9 @@ void Scene_Play::sMovement() {
     Vec2 player_velocity(0, m_player->getComponent<CTransform>().velocity.y);
     if (input.left) {
         player_velocity.x -= m_playerConfig.SX;
-
-        if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x < 0) {
-            player_animation.animation = m_game->assets().getAnimation("MegaManRun");
-            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
-        }
     }
     if (input.right) {
         player_velocity.x += m_playerConfig.SX;
-
-        if (player_animation.animation.getName() != "MegaManRun" || player_animation.animation.getSprite().getScale().x > 0) {
-            player_animation.animation = m_game->assets().getAnimation("MegaManRun");
-            player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
-        }
     } 
     // Add initial velocity if jump key is pressed
     if (input.up && player_state.on_ground) {
@@ -263,9 +253,28 @@ void Scene_Play::sMovement() {
             e->getComponent<CTransform>().pos += e->getComponent<CTransform>().velocity;
         }
     }
+}
+
+void Scene_Play::sAnimation() {
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    CState&     player_state     = m_player->getComponent<CState>();
+    CInput&     input            = m_player->getComponent<CInput>();
 
     bool is_idle = !input.left && !input.right;
     bool net_zero_horizontal_movement = input.left && input.right;
+    bool player_has_run_animation = player_animation.animation.getName() == "MegaManRun";
+    bool player_facing_left = player_animation.animation.getSprite().getScale().x > 0;
+
+    if (input.left && (!player_has_run_animation || !player_facing_left)) {
+        player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+        player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+    }
+    if (input.right && (!player_has_run_animation || player_facing_left)) {
+        player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+        player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
+    } 
+
     if (is_idle || net_zero_horizontal_movement) {
         if (player_animation.animation.getName() != "MegaManIdle") {
             float direction = player_animation.animation.getSprite().getScale().x / m_playerConfig.XSCALE;
@@ -280,11 +289,6 @@ void Scene_Play::sMovement() {
         player_animation.animation = m_game->assets().getAnimation("MegaManJump");
         player_animation.animation.getSprite().setScale(player_transform.scale.x * direction, player_transform.scale.y);
     }
-
-}
-
-void Scene_Play::sAnimation() {
-
 }
 
 void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
