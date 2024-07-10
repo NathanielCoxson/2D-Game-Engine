@@ -20,6 +20,8 @@ void Scene_Menu::init() {
     m_menuText.setFillColor(sf::Color::White);
     m_menuText.setCharacterSize(24);
     m_menuText.setFont(m_game->assets().getFont("RobotoRegular"));
+
+    m_levelPaths.push_back("bin/level_1.txt");
 }
 
 void Scene_Menu::update() {
@@ -41,8 +43,7 @@ void Scene_Menu::sDoAction(const Action& action) {
             m_selectedMenuIndex = (m_selectedMenuIndex + 1) % m_menuStrings.size();
         } else if (action.getName() == "PLAY") {
             // change game engine scene to current index
-            //m_game->changeScene("level_1", std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
-            m_game->changeScene("level_1");
+            m_game->changeScene("level_1", std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
         } else if (action.getName() == "QUIT") {
             onEnd();
         }

@@ -38,11 +38,7 @@ void GameEngine::init(const std::string& path) {
     m_window.create(sf::VideoMode(800, 600), "Slime Game");
     m_window.setFramerateLimit(60);
 
-    Scene_Menu menu_scene = Scene_Menu(this);
-    m_sceneMap[m_currentScene] = std::make_shared<Scene_Menu>(menu_scene);
-
-    Scene_Play level_1_scene = Scene_Play(this, "bin/level_1.txt");
-    m_sceneMap["level_1"] = std::make_shared<Scene_Play>(level_1_scene);
+    changeScene("menu", std::make_shared<Scene_Menu>(this));
 }
 
 void GameEngine::update() {
@@ -73,11 +69,18 @@ std::shared_ptr<Scene> GameEngine::currentScene() {
 }
 
 void GameEngine::changeScene(
-    const std::string& sceneName
-    //std::shared_ptr<Scene> scene,
-    //bool endCurrentScene
+    const std::string& sceneName,
+    std::shared_ptr<Scene> scene,
+    bool endCurrentScene
 ) {
+    if (endCurrentScene) {
+        m_sceneMap.erase(m_currentScene);
+    }
+
     m_currentScene = sceneName;
+    if (!m_sceneMap.count(sceneName)) {
+        m_sceneMap[m_currentScene] = scene;
+    }
 }
 
 void GameEngine::run() {
