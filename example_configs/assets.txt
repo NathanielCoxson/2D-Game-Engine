@@ -1,0 +1,19 @@
+Texture BlockTex ./src/assets/tiles/block.png
+Texture HouseTex ./src/assets/deco/house.png
+Texture SlimeJumpTex ./src/assets/sprites/slime_jump-Sheet.png
+Texture MegaManIdleTex ./src/assets/sprites/megaman_idle.png
+Texture MegaManJumpTex ./src/assets/sprites/megaman_jump.png
+Texture MegaManRunTex ./src/assets/sprites/megaman_run.png
+Texture BulletTex ./src/assets/sprites/megaman_bullet.png
+Texture BulletExplosionTex ./src/assets/sprites/megaman_bullet_explosion.png
+Texture FlagpoleTex ./src/assets/tiles/flagpole.png
+Animation Block BlockTex 1 1
+Animation House HouseTex 1 1
+Animation Slime SlimeJumpTex 17 10
+Animation MegaManIdle MegaManIdleTex 2 120 
+Animation MegaManJump MegaManJumpTex 1 1
+Animation MegaManRun MegaManRunTex 3 10
+Animation Bullet BulletTex 1 1
+Animation BulletExplosion BulletExplosionTex 4 10
+Animation Flagpole FlagpoleTex 1 1
+Font RobotoRegular ./bin/fonts/RobotoRegular.ttf
