@@ -1,7 +1,6 @@
 #include "Scene_Play.hpp"
 #include "Physics.hpp"
 #include "Vec2.hpp"
-#include "Scene_Menu.hpp"
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>
@@ -80,9 +79,22 @@ void Scene_Play::loadLevel(const std::string &path) {
       if (N == "Block") {
         tile->addComponent<CBoundingBox>(Vec2(m_gridSize.x, m_gridSize.y));
       } else if (N == "Flagpole") {
-        tile->addComponent<CBoundingBox>(
-            Vec2(animation.animation.getSize().x * SX / 2.0f,
-                 animation.animation.getSize().y * SY / 1.25f));
+        CBoundingBox& boundingBox = tile->addComponent<CBoundingBox>(
+            Vec2(
+                animation.animation.getSize().x * SX / 2.0f,
+                animation.animation.getSize().y * SY / 1.25f
+            )
+        );
+        auto flag = m_entities.addEntity("Flag");
+        CAnimation& flagAnimation = flag->addComponent<CAnimation>(m_game->assets().getAnimation("Flag"));
+
+        Vec2 flagPos = Vec2(
+            pos.x - (flagAnimation.animation.getSprite().getTexture()->getSize().x),
+            pos.y + boundingBox.halfSize.y - flagAnimation.animation.getSprite().getTexture()->getSize().y
+        );
+        flagAnimation.animation.getSprite().setPosition(flagPos.x, flagPos.y);
+        flagAnimation.animation.getSprite().setScale(SX, SY);
+        flag->addComponent<CTransform>(flagPos, Vec2(0, 0), 0);
       }
 
       // Transforms
