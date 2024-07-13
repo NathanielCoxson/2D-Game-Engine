@@ -122,6 +122,7 @@ public:
     bool on_ground = true;
     bool can_shoot = true;
     bool on_flagpole = false;
+    int flag_contact_height = 0;
     int jump_frame_count = 0;
     CState() {}
 };

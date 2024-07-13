@@ -249,52 +249,64 @@ void Scene_Play::sDoAction(const Action &action) {
 }
 
 void Scene_Play::sMovement() {
-  CInput input = m_player->getComponent<CInput>();
-  CTransform &player_transform = m_player->getComponent<CTransform>();
-  CAnimation &player_animation = m_player->getComponent<CAnimation>();
-  CState &player_state = m_player->getComponent<CState>();
-  CGravity &player_gravity = m_player->getComponent<CGravity>();
+    CInput input = m_player->getComponent<CInput>();
+    CTransform &player_transform = m_player->getComponent<CTransform>();
+    CAnimation &player_animation = m_player->getComponent<CAnimation>();
+    CState &player_state = m_player->getComponent<CState>();
+    CGravity &player_gravity = m_player->getComponent<CGravity>();
 
-  Vec2 player_velocity(0, m_player->getComponent<CTransform>().velocity.y);
-  if (input.left) {
-    player_velocity.x -= m_playerConfig.SX;
-  }
-  if (input.right) {
-    player_velocity.x += m_playerConfig.SX;
-  }
-  // Add initial velocity if jump key is pressed
-  if (input.up && player_state.on_ground) {
-    player_velocity.y = m_playerConfig.SY;
-  }
-  // Set velocity to 0 if jump key is released
-  if (!input.up && !player_state.on_ground) {
-    if (player_velocity.y < 0)
-      player_velocity.y = 0;
-  }
-  player_transform.velocity = player_velocity;
-
-  for (auto e : m_entities.getEntities()) {
-    if (e->hasComponent<CTransform>()) {
-      if (e->hasComponent<CGravity>() && !e->getComponent<CState>().on_ground) {
-        e->getComponent<CTransform>().velocity.y +=
-            e->getComponent<CGravity>().gravity;
-      }
-
-      // Cap speeds to maxspeed
-      auto &t = e->getComponent<CTransform>();
-      if (t.velocity.x > m_playerConfig.MAXSPEED)
-        t.velocity.x = m_playerConfig.MAXSPEED;
-      if (t.velocity.y > m_playerConfig.MAXSPEED)
-        t.velocity.y = m_playerConfig.MAXSPEED;
-      if (t.velocity.x < m_playerConfig.MAXSPEED * -1)
-        t.velocity.x = m_playerConfig.MAXSPEED * -1;
-      if (t.velocity.y < m_playerConfig.MAXSPEED * -1)
-        t.velocity.y = m_playerConfig.MAXSPEED * -1;
-      e->getComponent<CTransform>().prevPos = e->getComponent<CTransform>().pos;
-      e->getComponent<CTransform>().pos +=
-          e->getComponent<CTransform>().velocity;
+    Vec2 player_velocity(0, m_player->getComponent<CTransform>().velocity.y);
+    if (input.left) {
+        player_velocity.x -= m_playerConfig.SX;
     }
-  }
+    if (input.right) {
+        player_velocity.x += m_playerConfig.SX;
+    }
+    // Add initial velocity if jump key is pressed
+    if (input.up && player_state.on_ground) {
+        player_velocity.y = m_playerConfig.SY;
+    }
+    // Set velocity to 0 if jump key is released
+    if (!input.up && !player_state.on_ground) {
+        if (player_velocity.y < 0)
+            player_velocity.y = 0;
+    }
+
+    player_transform.velocity = player_velocity;
+
+    if (player_state.on_flagpole) {
+        player_transform.pos.y += 2;
+        // TODO: figure out a way to select the correct flag because
+        // if there is more than one flag allowed in a level, they will
+        // all move up even if the player is not on that flagpole.
+        for (auto flag: m_entities.getEntities("Flag")) {
+            flag->getComponent<CTransform>().pos.y -= 2;
+        }
+        return;
+    }
+
+    for (auto e : m_entities.getEntities()) {
+        if (e->hasComponent<CTransform>()) {
+            if (e->hasComponent<CGravity>() && !e->getComponent<CState>().on_ground) {
+                e->getComponent<CTransform>().velocity.y +=
+                    e->getComponent<CGravity>().gravity;
+            }
+
+            // Cap speeds to maxspeed
+            auto &t = e->getComponent<CTransform>();
+            if (t.velocity.x > m_playerConfig.MAXSPEED)
+                t.velocity.x = m_playerConfig.MAXSPEED;
+            if (t.velocity.y > m_playerConfig.MAXSPEED)
+                t.velocity.y = m_playerConfig.MAXSPEED;
+            if (t.velocity.x < m_playerConfig.MAXSPEED * -1)
+                t.velocity.x = m_playerConfig.MAXSPEED * -1;
+            if (t.velocity.y < m_playerConfig.MAXSPEED * -1)
+                t.velocity.y = m_playerConfig.MAXSPEED * -1;
+            e->getComponent<CTransform>().prevPos = e->getComponent<CTransform>().pos;
+            e->getComponent<CTransform>().pos +=
+                e->getComponent<CTransform>().velocity;
+        }
+    }
 }
 
 void Scene_Play::sAnimation() {
@@ -302,6 +314,13 @@ void Scene_Play::sAnimation() {
   CAnimation &player_animation = m_player->getComponent<CAnimation>();
   CState &player_state = m_player->getComponent<CState>();
   CInput &input = m_player->getComponent<CInput>();
+
+  if (m_levelEnded) {
+      auto scale = player_animation.animation.getSprite().getScale();
+      player_animation.animation = m_game->assets().getAnimation("MegaManIdle");
+      player_animation.animation.getSprite().setScale(scale);
+      return;
+  }
 
   bool is_idle = !input.left && !input.right;
   bool net_zero_horizontal_movement = input.left && input.right;
@@ -371,23 +390,27 @@ void Scene_Play::sCollision() {
         player_transform.pos.x >= tile->getComponent<CTransform>().pos.x;
 
     if (overlapping && vertical_collision && came_from_above) {
-      player_state.on_ground = true;
-      player_transform.pos.y -= overlap.y;
-      player_transform.velocity.y = 0;
-      continue;
+        if (player_state.on_flagpole) {
+            m_levelEnded = true;
+            return;
+        }
+        player_state.on_ground = true;
+        player_transform.pos.y -= overlap.y;
+        player_transform.velocity.y = 0;
+        continue;
     } else if (overlapping && vertical_collision && came_from_below) {
-      player_transform.pos.y += overlap.y;
-      player_transform.velocity.y = 0;
-      destroyBlock(tile);
-      continue;
+        player_transform.pos.y += overlap.y;
+        player_transform.velocity.y = 0;
+        destroyBlock(tile);
+        continue;
     } else if (overlapping && horizontal_collision && came_from_left) {
-      player_transform.pos.x -= overlap.x;
-      player_transform.velocity.x = 0;
-      continue;
+        player_transform.pos.x -= overlap.x;
+        player_transform.velocity.x = 0;
+        continue;
     } else if (overlapping && horizontal_collision && came_from_right) {
-      player_transform.pos.x += overlap.x;
-      player_transform.velocity.x = 0;
-      continue;
+        player_transform.pos.x += overlap.x;
+        player_transform.velocity.x = 0;
+        continue;
     }
   }
   for (auto slime : m_entities.getEntities("Slime")) {
@@ -458,6 +481,8 @@ void Scene_Play::sCollision() {
       }
     }
   }
+  
+  // Flagpole collision checking
   for (auto flagpole : m_entities.getEntities("Flagpole")) {
     Vec2 overlap = Physics::GetOverlap(m_player, flagpole);
     Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, flagpole);
@@ -465,7 +490,8 @@ void Scene_Play::sCollision() {
     bool overlapping = overlap.y >= 0 && overlap.x >= 0;
     if (overlapping) {
       player_state.on_flagpole = true;
-      m_levelEnded = true;
+      player_state.flag_contact_height = player_transform.pos.x;
+      m_player->removeComponent<CInput>();
     }
   }
 }
