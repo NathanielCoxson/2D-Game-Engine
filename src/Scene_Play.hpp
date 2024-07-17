@@ -24,9 +24,11 @@ protected:
     bool                    m_levelEnded = false;
     const Vec2              m_gridSize = { 64, 64 };
     sf::Text                m_gridText;
+    sf::Text                m_scoreText;
     sf::View                m_playerView;
     sf::Color               m_backgroundColor = sf::Color(100, 100, 255, 255);
     int                     m_levelWidth = 0;
+    int                     m_playerScore = 0;
 
     void init(const std::string& levelPath);
     void onEnd();

@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 Scene_Play::Scene_Play(GameEngine *gameEngine, const std::string &levelPath)
     : Scene(gameEngine), m_levelPath(levelPath) {
@@ -26,6 +27,10 @@ void Scene_Play::init(const std::string &levelPath) {
 
   m_gridText.setCharacterSize(12);
   m_gridText.setFont(m_game->assets().getFont("RobotoRegular"));
+
+  m_scoreText.setCharacterSize(32);
+  m_scoreText.setFont(m_game->assets().getFont("RobotoRegular"));
+  m_scoreText.setFillColor(sf::Color::White);
 
   loadLevel(m_levelPath);
 
@@ -118,8 +123,11 @@ void Scene_Play::loadLevel(const std::string &path) {
       animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
 
       if (N == "Slime") {
-        dec->addComponent<CBoundingBox>(Vec2(64, 64));
-        dec->addComponent<CTransform>(pos, Vec2(2, 0), 0);
+          dec->addComponent<CBoundingBox>(Vec2(64, 64));
+          dec->addComponent<CTransform>(pos, Vec2(2, 0), 0);
+      } else if (N == "Coin") {
+          dec->addComponent<CBoundingBox>(Vec2(32, 32));
+          dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
       }
     } else if (asset_type == "Player") {
       fin >> m_playerConfig.X >> m_playerConfig.Y;
@@ -154,58 +162,68 @@ void Scene_Play::loadLevel(const std::string &path) {
 }
 
 void Scene_Play::update() {
-  m_currentFrame++;
-  m_entities.update();
+    m_currentFrame++;
+    m_entities.update();
 
-  if (!m_levelEnded) {
-    sMovement();
-    sCollision();
-    sAnimation();
-  }
-
-  for (auto e : m_entities.getEntities()) {
-    if (e->hasComponent<CAnimation>()) {
-      CAnimation &animation = e->getComponent<CAnimation>();
-      if (e->hasComponent<CTransform>()) {
-        Vec2 pos = e->getComponent<CTransform>().pos;
-        animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
-      }
-      animation.animation.update();
-
-      bool animationEnded =
-          !animation.animation.isInfinite() && animation.animation.hasEnded();
-      if (animationEnded) {
-        e->destroy();
-        continue;
-      }
+    if (!m_levelEnded) {
+        sMovement();
+        sCollision();
+        sAnimation();
     }
-    if (e->hasComponent<CLifeSpan>()) {
-      e->getComponent<CLifeSpan>().remaining--;
-      if (e->tag() == "Bullet" && e->getComponent<CLifeSpan>().remaining <= 0) {
-        e->getComponent<CAnimation>().animation =
-            m_game->assets().getAnimation("BulletExplosion");
-        e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
-        e->getComponent<CAnimation>().animation.setInfinite(false);
-        e->getComponent<CTransform>().velocity = Vec2(0, 0);
-        e->removeComponent<CLifeSpan>();
-      }
-    }
-  }
 
-  // Center player view
-  CTransform &player_transform = m_player->getComponent<CTransform>();
-  float viewHalfWidth = m_playerView.getSize().x / 2.0f;
-  if (player_transform.pos.x - viewHalfWidth < 0) {
-    m_playerView.setCenter(m_game->window().getSize().x / 2.0f,
-                           m_game->window().getSize().y / 2.0f);
-  } else if (player_transform.pos.x + viewHalfWidth >
-             (m_levelWidth + 1) * m_gridSize.x) {
-    m_playerView.setCenter((m_levelWidth + 1) * m_gridSize.x - viewHalfWidth,
-                           m_game->window().getSize().y / 2.0f);
-  } else {
-    m_playerView.setCenter(sf::Vector2f(player_transform.pos.x,
-                                        m_game->window().getSize().y / 2.0f));
-  }
+    for (auto e : m_entities.getEntities()) {
+        if (e->hasComponent<CAnimation>()) {
+            CAnimation &animation = e->getComponent<CAnimation>();
+            if (e->hasComponent<CTransform>()) {
+                Vec2 pos = e->getComponent<CTransform>().pos;
+                animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+            }
+            animation.animation.update();
+
+            bool animationEnded =
+                !animation.animation.isInfinite() && animation.animation.hasEnded();
+            if (animationEnded) {
+                e->destroy();
+                continue;
+            }
+        }
+        if (e->hasComponent<CLifeSpan>()) {
+            e->getComponent<CLifeSpan>().remaining--;
+            if (e->tag() == "Bullet" && e->getComponent<CLifeSpan>().remaining <= 0) {
+                e->getComponent<CAnimation>().animation =
+                    m_game->assets().getAnimation("BulletExplosion");
+                e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+                e->getComponent<CAnimation>().animation.setInfinite(false);
+                e->getComponent<CTransform>().velocity = Vec2(0, 0);
+                e->removeComponent<CLifeSpan>();
+            }
+        }
+    }
+
+    // Center player view
+    CTransform &player_transform = m_player->getComponent<CTransform>();
+    float viewHalfWidth = m_playerView.getSize().x / 2.0f;
+    if (player_transform.pos.x - viewHalfWidth < 0) {
+        m_playerView.setCenter(m_game->window().getSize().x / 2.0f,
+            m_game->window().getSize().y / 2.0f);
+    } else if (player_transform.pos.x + viewHalfWidth >
+            (m_levelWidth + 1) * m_gridSize.x) {
+        m_playerView.setCenter((m_levelWidth + 1) * m_gridSize.x - viewHalfWidth,
+            m_game->window().getSize().y / 2.0f);
+    } else {
+        m_playerView.setCenter(sf::Vector2f(player_transform.pos.x,
+            m_game->window().getSize().y / 2.0f));
+    }
+
+    // Score text update
+    std::stringstream ss;
+    ss << "Score: " << m_playerScore;
+    m_scoreText.setString(ss.str());
+    sf::FloatRect textRect = m_scoreText.getGlobalBounds();
+    m_scoreText.setPosition(sf::Vector2f(
+        m_playerView.getCenter().x - m_playerView.getSize().x / 2.0f,
+        m_playerView.getCenter().y - m_playerView.getSize().y / 2.0f
+    ));
 }
 
 void Scene_Play::sDoAction(const Action &action) {
@@ -481,6 +499,17 @@ void Scene_Play::sCollision() {
       }
     }
   }
+  for (auto coin : m_entities.getEntities("Coin")) {
+    Vec2 overlap = Physics::GetOverlap(m_player, coin);
+
+    bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+
+    if (overlapping) {
+        m_playerScore += 200;
+        coin->removeComponent<CBoundingBox>();
+        coin->destroy();
+    }
+  }
   
   // Flagpole collision checking
   for (auto flagpole : m_entities.getEntities("Flagpole")) {
@@ -504,6 +533,7 @@ void Scene_Play::sRender() {
   m_game->window().clear(m_backgroundColor);
 
   // Draw
+  m_game->window().draw(m_scoreText);
   for (auto e : m_entities.getEntities()) {
     if (e->hasComponent<CAnimation>()) {
       if (m_drawTextures) {
