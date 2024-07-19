@@ -379,11 +379,16 @@ void Scene_Play::sAnimation() {
 }
 
 void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
-  e->getComponent<CAnimation>().animation =
-      m_game->assets().getAnimation("BulletExplosion");
-  e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
-  e->getComponent<CAnimation>().animation.setInfinite(false);
-  e->removeComponent<CBoundingBox>();
+    e->getComponent<CAnimation>().animation =
+        m_game->assets().getAnimation("BulletExplosion");
+    e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+    e->getComponent<CAnimation>().animation.setInfinite(false);
+    e->removeComponent<CBoundingBox>();
+}
+
+void Scene_Play::destroyEnemy(std::shared_ptr<Entity> e) {
+    e->destroy();
+    m_playerScore += 100;
 }
 
 void Scene_Play::sCollision() {
@@ -443,7 +448,7 @@ void Scene_Play::sCollision() {
         player_transform.pos.y <= slime->getComponent<CTransform>().pos.y;
 
     if (overlapping && vertical_collision && came_from_above) {
-      slime->destroy();
+      destroyEnemy(slime);
       continue;
     } else if (overlapping) {
       m_player->destroy();
@@ -496,6 +501,7 @@ void Scene_Play::sCollision() {
         slime->getComponent<CAnimation>().animation.setInfinite(false);
         slime->getComponent<CTransform>().velocity = Vec2(0, 0);
         slime->removeComponent<CBoundingBox>();
+        m_playerScore += 100;
       }
     }
   }
