@@ -38,6 +38,7 @@ protected:
     void spawnBullet();
 
     void destroyBlock(std::shared_ptr<Entity> e);
+    void destroyEnemy(std::shared_ptr<Entity> e);
 
     void sDoAction(const Action& action);
     void sAnimation();
