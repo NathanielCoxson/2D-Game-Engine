@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 Scene_Play::Scene_Play(GameEngine *gameEngine, const std::string &levelPath)
     : Scene(gameEngine), m_levelPath(levelPath) {
@@ -415,6 +416,7 @@ void Scene_Play::sCollision() {
     if (overlapping && vertical_collision && came_from_above) {
         if (player_state.on_flagpole) {
             m_levelEnded = true;
+            m_playerScore += std::floor(player_state.flag_contact_height / 100) * 100;
             return;
         }
         player_state.on_ground = true;
