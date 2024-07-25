@@ -49,3 +49,7 @@ bool Animation::isInfinite() const {
 void Animation::setInfinite(bool is_infinite) {
     m_infinite = is_infinite;
 }
+
+void Animation::setSpeed(size_t speed) {
+    m_speed = speed;
+}

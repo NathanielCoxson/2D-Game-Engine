@@ -26,4 +26,5 @@ public:
     sf::Sprite&        getSprite();
     bool               isInfinite() const;
     void               setInfinite(bool is_infinite);
+    void               setSpeed(size_t speed);
 };

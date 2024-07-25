@@ -380,11 +380,21 @@ void Scene_Play::sAnimation() {
 }
 
 void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
+    // Play coin animation
+    std::shared_ptr<Entity> coin = m_entities.addEntity("Coin");
+    coin->addComponent<CTransform>(e->getComponent<CTransform>().pos, Vec2(0.0, -5.0), 0);
+    coin->addComponent<CAnimation>(m_game->assets().getAnimation("Coin"));
+    coin->getComponent<CAnimation>().animation.getSprite().setScale(2.5, 2.5);
+    coin->getComponent<CAnimation>().animation.setSpeed(5);
+    coin->getComponent<CAnimation>().animation.setInfinite(false);
+    m_playerScore += 100;
+
     e->getComponent<CAnimation>().animation =
         m_game->assets().getAnimation("BulletExplosion");
     e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
     e->getComponent<CAnimation>().animation.setInfinite(false);
     e->removeComponent<CBoundingBox>();
+
 }
 
 void Scene_Play::destroyEnemy(std::shared_ptr<Entity> e) {
