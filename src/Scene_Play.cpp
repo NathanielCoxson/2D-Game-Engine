@@ -228,43 +228,46 @@ void Scene_Play::update() {
 }
 
 void Scene_Play::sDoAction(const Action &action) {
-  auto &input = m_player->getComponent<CInput>();
-  if (action.getType() == "START") {
-    if (action.getName() == "LEFT" && !input.left) {
-      input.left = true;
-    } else if (action.getName() == "RIGHT" && !input.right) {
-      input.right = true;
-    } else if (action.getName() == "JUMP") {
-      input.up = true;
-    } else if (action.getName() == "SHOOT") {
-      if (m_player->getComponent<CState>().can_shoot) {
-        spawnBullet();
-        m_player->getComponent<CState>().can_shoot = false;
-      }
-    } else if (action.getName() == "QUIT") {
-      onEnd();
+    auto &input = m_player->getComponent<CInput>();
+    auto &state = m_player->getComponent<CState>();
+
+    if (action.getType() == "START") {
+        if (action.getName() == "LEFT" && !input.left) {
+            input.left = true;
+        } else if (action.getName() == "RIGHT" && !input.right) {
+            input.right = true;
+        } else if (action.getName() == "JUMP") {
+            input.up = true;
+        } else if (action.getName() == "SHOOT") {
+            bool can_shoot = state.can_shoot && !state.on_flagpole;
+            if (can_shoot) {
+                spawnBullet();
+                m_player->getComponent<CState>().can_shoot = false;
+            }
+        } else if (action.getName() == "QUIT") {
+            onEnd();
+        }
+    } else if (action.getType() == "END") {
+        if (action.getName() == "LEFT" && input.left) {
+            input.left = false;
+        } else if (action.getName() == "RIGHT" && input.right) {
+            input.right = false;
+        } else if (action.getName() == "JUMP") {
+            input.up = false;
+        } else if (action.getName() == "SHOOT") {
+            m_player->getComponent<CState>().can_shoot = true;
+        } else if (action.getName() == "TOGGLE_COLLISION") {
+            if (m_drawCollision)
+                m_drawCollision = false;
+            else
+                m_drawCollision = true;
+        } else if (action.getName() == "TOGGLE_TEXTURE") {
+            if (m_drawTextures)
+                m_drawTextures = false;
+            else
+                m_drawTextures = true;
+        }
     }
-  } else if (action.getType() == "END") {
-    if (action.getName() == "LEFT" && input.left) {
-      input.left = false;
-    } else if (action.getName() == "RIGHT" && input.right) {
-      input.right = false;
-    } else if (action.getName() == "JUMP") {
-      input.up = false;
-    } else if (action.getName() == "SHOOT") {
-      m_player->getComponent<CState>().can_shoot = true;
-    } else if (action.getName() == "TOGGLE_COLLISION") {
-      if (m_drawCollision)
-        m_drawCollision = false;
-      else
-        m_drawCollision = true;
-    } else if (action.getName() == "TOGGLE_TEXTURE") {
-      if (m_drawTextures)
-        m_drawTextures = false;
-      else
-        m_drawTextures = true;
-    }
-  }
 }
 
 void Scene_Play::sMovement() {
@@ -538,7 +541,6 @@ void Scene_Play::sCollision() {
     if (overlapping) {
       player_state.on_flagpole = true;
       player_state.flag_contact_height = player_transform.pos.x;
-      m_player->removeComponent<CInput>();
     }
   }
 }
