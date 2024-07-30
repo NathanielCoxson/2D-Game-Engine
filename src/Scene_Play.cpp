@@ -406,143 +406,146 @@ void Scene_Play::destroyEnemy(std::shared_ptr<Entity> e) {
 }
 
 void Scene_Play::sCollision() {
-  CState &player_state = m_player->getComponent<CState>();
-  CTransform &player_transform = m_player->getComponent<CTransform>();
+    CState &player_state = m_player->getComponent<CState>();
+    CTransform &player_transform = m_player->getComponent<CTransform>();
 
-  player_state.on_ground = false;
-  for (auto tile : m_entities.getEntities("Block")) {
-    Vec2 overlap = Physics::GetOverlap(m_player, tile);
-    Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, tile);
-
-    bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-    bool vertical_collision = prevOverlap.x > 0;
-    bool horizontal_collision = prevOverlap.y > 0;
-    bool came_from_above =
-        player_transform.pos.y <= tile->getComponent<CTransform>().pos.y;
-    bool came_from_below =
-        player_transform.pos.y >= tile->getComponent<CTransform>().pos.y;
-    bool came_from_left =
-        player_transform.pos.x <= tile->getComponent<CTransform>().pos.x;
-    bool came_from_right =
-        player_transform.pos.x >= tile->getComponent<CTransform>().pos.x;
-
-    if (overlapping && vertical_collision && came_from_above) {
-        if (player_state.on_flagpole) {
-            m_levelEnded = true;
-            m_playerScore += std::floor(player_state.flag_contact_height / 100) * 100;
-            return;
-        }
-        player_state.on_ground = true;
-        player_transform.pos.y -= overlap.y;
-        player_transform.velocity.y = 0;
-        continue;
-    } else if (overlapping && vertical_collision && came_from_below) {
-        player_transform.pos.y += overlap.y;
-        player_transform.velocity.y = 0;
-        destroyBlock(tile);
-        continue;
-    } else if (overlapping && horizontal_collision && came_from_left) {
-        player_transform.pos.x -= overlap.x;
-        player_transform.velocity.x = 0;
-        continue;
-    } else if (overlapping && horizontal_collision && came_from_right) {
-        player_transform.pos.x += overlap.x;
-        player_transform.velocity.x = 0;
-        continue;
-    }
-  }
-  for (auto slime : m_entities.getEntities("Slime")) {
-    // Player collision checking
-    Vec2 overlap = Physics::GetOverlap(m_player, slime);
-    Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, slime);
-
-    bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-    bool vertical_collision = prevOverlap.x > 0;
-    bool horizontal_collision = prevOverlap.y > 0;
-    bool came_from_above =
-        player_transform.pos.y <= slime->getComponent<CTransform>().pos.y;
-
-    if (overlapping && vertical_collision && came_from_above) {
-      destroyEnemy(slime);
-      continue;
-    } else if (overlapping) {
-      m_player->destroy();
-    }
-
-    // Block collision checking
-    for (auto block : m_entities.getEntities("Block")) {
-      Vec2 overlap = Physics::GetOverlap(block, slime);
-      Vec2 prevOverlap = Physics::GetPreviousOverlap(block, slime);
-
-      bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-      bool horizontal_collision = prevOverlap.y > 0;
-      if (overlapping && horizontal_collision) {
-        slime->getComponent<CTransform>().velocity.x *= -1;
-      }
-    }
-
-    // Level boundary collision checking
-    CTransform &transform = slime->getComponent<CTransform>();
-    CBoundingBox &boundingBox = slime->getComponent<CBoundingBox>();
-    if (transform.pos.x - boundingBox.halfSize.x <= 0 ||
-        transform.pos.x + boundingBox.halfSize.x >=
-            (m_levelWidth + 1) * m_gridSize.x) {
-      transform.velocity.x *= -1;
-    }
-  }
-  for (auto bullet : m_entities.getEntities("Bullet")) {
+    player_state.on_ground = false;
     for (auto tile : m_entities.getEntities("Block")) {
-      CTransform &bullet_transform = bullet->getComponent<CTransform>();
-      Vec2 overlap = Physics::GetOverlap(tile, bullet);
-      Vec2 prevOverlap = Physics::GetPreviousOverlap(tile, bullet);
+        Vec2 overlap = Physics::GetOverlap(m_player, tile);
+        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, tile);
 
-      bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-      if (overlapping) {
-        bullet->destroy();
-        destroyBlock(tile);
-      }
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        bool vertical_collision = prevOverlap.x > 0;
+        bool horizontal_collision = prevOverlap.y > 0;
+        bool came_from_above =
+            player_transform.pos.y <= tile->getComponent<CTransform>().pos.y;
+        bool came_from_below =
+            player_transform.pos.y >= tile->getComponent<CTransform>().pos.y;
+        bool came_from_left =
+            player_transform.pos.x <= tile->getComponent<CTransform>().pos.x;
+        bool came_from_right =
+            player_transform.pos.x >= tile->getComponent<CTransform>().pos.x;
+
+        if (overlapping && vertical_collision && came_from_above) {
+            if (player_state.on_flagpole) {
+                m_levelEnded = true;
+                m_playerScore += std::floor(player_state.flag_contact_height / 100) * 100;
+                return;
+            }
+            player_state.on_ground = true;
+            player_transform.pos.y -= overlap.y;
+            player_transform.velocity.y = 0;
+            continue;
+        } else if (overlapping && vertical_collision && came_from_below) {
+            player_transform.pos.y += overlap.y;
+            player_transform.velocity.y = 0;
+            destroyBlock(tile);
+            continue;
+        } else if (overlapping && horizontal_collision && came_from_left) {
+            player_transform.pos.x -= overlap.x;
+            player_transform.velocity.x = 0;
+            continue;
+        } else if (overlapping && horizontal_collision && came_from_right) {
+            player_transform.pos.x += overlap.x;
+            player_transform.velocity.x = 0;
+            continue;
+        }
     }
     for (auto slime : m_entities.getEntities("Slime")) {
-      CTransform &bullet_transform = bullet->getComponent<CTransform>();
-      Vec2 overlap = Physics::GetOverlap(slime, bullet);
-      Vec2 prevOverlap = Physics::GetPreviousOverlap(slime, bullet);
+        // Player collision checking
+        Vec2 overlap = Physics::GetOverlap(m_player, slime);
+        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, slime);
 
-      bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-      if (overlapping) {
-        bullet->destroy();
-        slime->getComponent<CAnimation>().animation =
-            m_game->assets().getAnimation("BulletExplosion");
-        slime->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
-        slime->getComponent<CAnimation>().animation.setInfinite(false);
-        slime->getComponent<CTransform>().velocity = Vec2(0, 0);
-        slime->removeComponent<CBoundingBox>();
-        m_playerScore += 100;
-      }
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        bool vertical_collision = prevOverlap.x > 0;
+        bool horizontal_collision = prevOverlap.y > 0;
+        bool came_from_above =
+            player_transform.pos.y <= slime->getComponent<CTransform>().pos.y;
+
+        if (overlapping && vertical_collision && came_from_above) {
+            destroyEnemy(slime);
+            continue;
+        } else if (overlapping) {
+            m_player->destroy();
+        }
+
+        // Block collision checking
+        for (auto block : m_entities.getEntities("Block")) {
+            Vec2 overlap = Physics::GetOverlap(block, slime);
+            Vec2 prevOverlap = Physics::GetPreviousOverlap(block, slime);
+
+            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            bool horizontal_collision = prevOverlap.y > 0;
+            if (overlapping && horizontal_collision) {
+                slime->getComponent<CTransform>().velocity.x *= -1;
+            }
+        }
+
+        // Level boundary collision checking
+        CTransform &transform = slime->getComponent<CTransform>();
+        CBoundingBox &boundingBox = slime->getComponent<CBoundingBox>();
+        if (transform.pos.x - boundingBox.halfSize.x <= 0 ||
+                transform.pos.x + boundingBox.halfSize.x >=
+                (m_levelWidth + 1) * m_gridSize.x) {
+            transform.velocity.x *= -1;
+        }
     }
-  }
-  for (auto coin : m_entities.getEntities("Coin")) {
-    Vec2 overlap = Physics::GetOverlap(m_player, coin);
+    for (auto bullet : m_entities.getEntities("Bullet")) {
+        for (auto tile : m_entities.getEntities("Block")) {
+            CTransform &bullet_transform = bullet->getComponent<CTransform>();
+            Vec2 overlap = Physics::GetOverlap(tile, bullet);
+            Vec2 prevOverlap = Physics::GetPreviousOverlap(tile, bullet);
 
-    bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            if (overlapping) {
+                bullet->destroy();
+                destroyBlock(tile);
+            }
+        }
+        for (auto slime : m_entities.getEntities("Slime")) {
+            CTransform &bullet_transform = bullet->getComponent<CTransform>();
+            Vec2 overlap = Physics::GetOverlap(slime, bullet);
+            Vec2 prevOverlap = Physics::GetPreviousOverlap(slime, bullet);
 
-    if (overlapping) {
-        m_playerScore += 200;
-        coin->removeComponent<CBoundingBox>();
-        coin->destroy();
+            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            if (overlapping) {
+                bullet->destroy();
+                slime->getComponent<CAnimation>().animation =
+                    m_game->assets().getAnimation("BulletExplosion");
+                slime->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+                slime->getComponent<CAnimation>().animation.setInfinite(false);
+                slime->getComponent<CTransform>().velocity = Vec2(0, 0);
+                slime->removeComponent<CBoundingBox>();
+                m_playerScore += 100;
+            }
+        }
     }
-  }
-  
-  // Flagpole collision checking
-  for (auto flagpole : m_entities.getEntities("Flagpole")) {
-    Vec2 overlap = Physics::GetOverlap(m_player, flagpole);
-    Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, flagpole);
+    for (auto coin : m_entities.getEntities("Coin")) {
+        Vec2 overlap = Physics::GetOverlap(m_player, coin);
 
-    bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-    if (overlapping) {
-      player_state.on_flagpole = true;
-      player_state.flag_contact_height = player_transform.pos.x;
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+
+        if (overlapping) {
+            m_playerScore += 200;
+            coin->removeComponent<CBoundingBox>();
+            coin->destroy();
+        }
     }
-  }
+
+    // Flagpole collision checking
+    for (auto flagpole : m_entities.getEntities("Flagpole")) {
+        Vec2 overlap = Physics::GetOverlap(m_player, flagpole);
+        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, flagpole);
+
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        if (overlapping) {
+            player_state.on_flagpole = true;
+            player_state.flag_contact_height = player_transform.pos.x;
+            for (auto bullet: m_entities.getEntities("Bullet")) {
+                bullet->destroy();
+            }
+        }
+    }
 }
 
 void Scene_Play::sRender() {
