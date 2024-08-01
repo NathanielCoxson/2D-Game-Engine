@@ -22,6 +22,7 @@ void Scene_Menu::init() {
     m_menuText.setFont(m_game->assets().getFont("RobotoRegular"));
 
     m_levelPaths.push_back("bin/level_1.txt");
+    m_levelPaths.push_back("bin/level_2.txt");
 }
 
 void Scene_Menu::update() {
