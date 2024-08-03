@@ -27,10 +27,10 @@ void Scene_Play::init(const std::string &levelPath) {
   registerAction(sf::Keyboard::Space, "SHOOT");
 
   m_gridText.setCharacterSize(12);
-  m_gridText.setFont(m_game->assets().getFont("RobotoRegular"));
+  m_gridText.setFont(m_game->assets().getFont("PrimaryFont"));
 
   m_scoreText.setCharacterSize(32);
-  m_scoreText.setFont(m_game->assets().getFont("RobotoRegular"));
+  m_scoreText.setFont(m_game->assets().getFont("PrimaryFont"));
   m_scoreText.setFillColor(sf::Color::White);
 
   loadLevel(m_levelPath);
@@ -583,7 +583,7 @@ void Scene_Play::sRender() {
   if (m_levelEnded) {
     sf::Text endingText;
     endingText.setString("You Win!");
-    endingText.setFont(m_game->assets().getFont("RobotoRegular"));
+    endingText.setFont(m_game->assets().getFont("PrimaryFont"));
     endingText.setCharacterSize(32);
     endingText.setFillColor(sf::Color::White);
     endingText.setOrigin(endingText.getGlobalBounds().width / 2.0f,
