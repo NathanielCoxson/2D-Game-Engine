@@ -19,7 +19,7 @@ void Scene_Menu::init() {
 
     m_menuText.setFillColor(sf::Color::White);
     m_menuText.setCharacterSize(24);
-    m_menuText.setFont(m_game->assets().getFont("RobotoRegular"));
+    m_menuText.setFont(m_game->assets().getFont("PrimaryFont"));
 
     m_levelPaths.push_back("bin/level_1.txt");
     m_levelPaths.push_back("bin/level_2.txt");
@@ -78,7 +78,7 @@ void Scene_Menu::sRender() {
     else m_menuText.setFillColor(sf::Color::White);
     m_game->window().draw(m_menuText);
 
-    m_menuText.setString("UP:W\tDOWN:S\tPLAY:ENTER\tBACK:ESC");
+    m_menuText.setString("UP:W DOWN:S PLAY:ENTER BACK:ESC");
     m_menuText.setPosition(sf::Vector2f(10, height() - 34));
     m_menuText.setFillColor(sf::Color::White);
     m_game->window().draw(m_menuText);
