@@ -54,7 +54,7 @@ void Scene_Menu::sDoAction(const Action& action) {
 void Scene_Menu::sRender() {
     update();
 
-    m_game->window().clear(sf::Color::Black);
+    m_game->window().clear(m_backgroundColor);
 
     m_menuText.setString(m_title);
     m_menuText.setPosition(sf::Vector2f(10, 10));
