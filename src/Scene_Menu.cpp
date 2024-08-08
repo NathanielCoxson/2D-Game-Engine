@@ -56,28 +56,21 @@ void Scene_Menu::sRender() {
 
     m_game->window().clear(m_backgroundColor);
 
+    // Draw title
     m_menuText.setString(m_title);
     m_menuText.setPosition(sf::Vector2f(10, 10));
     m_game->window().draw(m_menuText);
 
-    m_menuText.setString("Level 1");
-    m_menuText.setPosition(sf::Vector2f(10, 44));
-    if (m_selectedMenuIndex == 0) m_menuText.setFillColor(sf::Color::Blue);
-    else m_menuText.setFillColor(sf::Color::White);
-    m_game->window().draw(m_menuText);
+    // Draw level options
+    for (int i = 0; i < m_menuStrings.size(); i++) {
+        m_menuText.setString(m_menuStrings[i]);
+        m_menuText.setPosition(sf::Vector2f(10, (i + 1) * 44));
+        if (m_selectedMenuIndex == i) m_menuText.setFillColor(sf::Color::Blue);
+        else m_menuText.setFillColor(sf::Color::White);
+        m_game->window().draw(m_menuText);
+    }
 
-    m_menuText.setString("Level 2");
-    m_menuText.setPosition(sf::Vector2f(10, 78));
-    if (m_selectedMenuIndex == 1) m_menuText.setFillColor(sf::Color::Blue);
-    else m_menuText.setFillColor(sf::Color::White);
-    m_game->window().draw(m_menuText);
-
-    m_menuText.setString("Level 3");
-    m_menuText.setPosition(sf::Vector2f(10, 112));
-    if (m_selectedMenuIndex == 2) m_menuText.setFillColor(sf::Color::Blue);
-    else m_menuText.setFillColor(sf::Color::White);
-    m_game->window().draw(m_menuText);
-
+    // Draw keybinds
     m_menuText.setString("UP:W DOWN:S PLAY:ENTER BACK:ESC");
     m_menuText.setPosition(sf::Vector2f(10, height() - 34));
     m_menuText.setFillColor(sf::Color::White);
