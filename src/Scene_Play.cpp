@@ -201,6 +201,16 @@ void Scene_Play::update() {
         }
     }
 
+    // Score text update
+    std::stringstream ss;
+    ss << "Score: " << m_playerScore;
+    m_scoreText.setString(ss.str());
+    sf::FloatRect textRect = m_scoreText.getGlobalBounds();
+    m_scoreText.setPosition(sf::Vector2f(
+        m_playerView.getCenter().x - m_playerView.getSize().x / 2.0f + m_scoreTextPadding,
+        m_playerView.getCenter().y - m_playerView.getSize().y / 2.0f + m_scoreTextPadding
+    ));
+
     // Center player view
     CTransform &player_transform = m_player->getComponent<CTransform>();
     float viewHalfWidth = m_playerView.getSize().x / 2.0f;
@@ -208,23 +218,16 @@ void Scene_Play::update() {
         m_playerView.setCenter(m_game->window().getSize().x / 2.0f,
             m_game->window().getSize().y / 2.0f);
     } else if (player_transform.pos.x + viewHalfWidth >
-            (m_levelWidth + 1) * m_gridSize.x) {
-        m_playerView.setCenter((m_levelWidth + 1) * m_gridSize.x - viewHalfWidth,
-            m_game->window().getSize().y / 2.0f);
+               (m_levelWidth + 1) * m_gridSize.x) {
+        m_playerView.setCenter(
+            (m_levelWidth + 1) * m_gridSize.x - viewHalfWidth,
+            m_game->window().getSize().y / 2.0f
+        );
     } else {
         m_playerView.setCenter(sf::Vector2f(player_transform.pos.x,
             m_game->window().getSize().y / 2.0f));
     }
 
-    // Score text update
-    std::stringstream ss;
-    ss << "Score: " << m_playerScore;
-    m_scoreText.setString(ss.str());
-    sf::FloatRect textRect = m_scoreText.getGlobalBounds();
-    m_scoreText.setPosition(sf::Vector2f(
-        m_playerView.getCenter().x - m_playerView.getSize().x / 2.0f,
-        m_playerView.getCenter().y - m_playerView.getSize().y / 2.0f
-    ));
 }
 
 void Scene_Play::sDoAction(const Action &action) {
@@ -549,53 +552,53 @@ void Scene_Play::sCollision() {
 }
 
 void Scene_Play::sRender() {
-  // Update
-  update();
+    // Update
+    update();
 
-  // Clear
-  m_game->window().clear(m_backgroundColor);
+    // Clear
+    m_game->window().clear(m_backgroundColor);
 
-  // Draw
-  m_game->window().draw(m_scoreText);
-  for (auto e : m_entities.getEntities()) {
-    if (e->hasComponent<CAnimation>()) {
-      if (m_drawTextures) {
-        m_game->window().draw(
-            e->getComponent<CAnimation>().animation.getSprite());
-      }
+    // Draw
+    m_game->window().draw(m_scoreText);
+    for (auto e : m_entities.getEntities()) {
+        if (e->hasComponent<CAnimation>()) {
+            if (m_drawTextures) {
+                m_game->window().draw(
+                        e->getComponent<CAnimation>().animation.getSprite());
+            }
+        }
+        if (e->hasComponent<CBoundingBox>()) {
+            if (m_drawCollision) {
+                auto &transform = e->getComponent<CTransform>();
+                auto &bb = e->getComponent<CBoundingBox>();
+                sf::RectangleShape outline;
+                outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
+                outline.setOrigin(
+                        sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
+                outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+                outline.setOutlineThickness(2);
+                outline.setOutlineColor(sf::Color::Blue);
+                outline.setFillColor(sf::Color::Transparent);
+                m_game->window().draw(outline);
+            }
+        }
     }
-    if (e->hasComponent<CBoundingBox>()) {
-      if (m_drawCollision) {
-        auto &transform = e->getComponent<CTransform>();
-        auto &bb = e->getComponent<CBoundingBox>();
-        sf::RectangleShape outline;
-        outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
-        outline.setOrigin(
-            sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
-        outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
-        outline.setOutlineThickness(2);
-        outline.setOutlineColor(sf::Color::Blue);
-        outline.setFillColor(sf::Color::Transparent);
-        m_game->window().draw(outline);
-      }
+    if (m_levelEnded) {
+        sf::Text endingText;
+        endingText.setString("You Win!");
+        endingText.setFont(m_game->assets().getFont("PrimaryFont"));
+        endingText.setCharacterSize(32);
+        endingText.setFillColor(sf::Color::White);
+        endingText.setOrigin(endingText.getGlobalBounds().width / 2.0f,
+                endingText.getGlobalBounds().height / 2.0f);
+        endingText.setPosition(m_playerView.getCenter().x,
+                m_playerView.getCenter().y);
+        m_game->window().draw(endingText);
     }
-  }
-  if (m_levelEnded) {
-    sf::Text endingText;
-    endingText.setString("You Win!");
-    endingText.setFont(m_game->assets().getFont("PrimaryFont"));
-    endingText.setCharacterSize(32);
-    endingText.setFillColor(sf::Color::White);
-    endingText.setOrigin(endingText.getGlobalBounds().width / 2.0f,
-                         endingText.getGlobalBounds().height / 2.0f);
-    endingText.setPosition(m_playerView.getCenter().x,
-                           m_playerView.getCenter().y);
-    m_game->window().draw(endingText);
-  }
 
-  // Display
-  m_game->window().setView(m_playerView);
-  m_game->window().display();
+    // Display
+    m_game->window().setView(m_playerView);
+    m_game->window().display();
 }
 
 void Scene_Play::spawnBullet() {

@@ -25,6 +25,7 @@ protected:
     const Vec2              m_gridSize = { 64, 64 };
     sf::Text                m_gridText;
     sf::Text                m_scoreText;
+    int                     m_scoreTextPadding = 12;
     sf::View                m_playerView;
     sf::Color               m_backgroundColor = sf::Color(100, 100, 255, 255);
     int                     m_levelWidth = 0;
