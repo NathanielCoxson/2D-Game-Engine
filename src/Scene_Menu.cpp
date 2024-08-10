@@ -23,6 +23,7 @@ void Scene_Menu::init() {
 
     m_levelPaths.push_back("bin/level_1.txt");
     m_levelPaths.push_back("bin/level_2.txt");
+    m_levelPaths.push_back("bin/level_3.txt");
 }
 
 void Scene_Menu::update() {
