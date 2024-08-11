@@ -413,6 +413,10 @@ void Scene_Play::sCollision() {
     CTransform &player_transform = m_player->getComponent<CTransform>();
 
     player_state.on_ground = false;
+    bool hit_block_from_below = false;
+    float max_horizontal_overlap = 0;
+    float hit_block_vertical_overlap = 0;
+    std::shared_ptr<Entity> block_to_destroy = nullptr;
     for (auto tile : m_entities.getEntities("Block")) {
         Vec2 overlap = Physics::GetOverlap(m_player, tile);
         Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, tile);
@@ -440,9 +444,12 @@ void Scene_Play::sCollision() {
             player_transform.velocity.y = 0;
             continue;
         } else if (overlapping && vertical_collision && came_from_below) {
-            player_transform.pos.y += overlap.y;
-            player_transform.velocity.y = 0;
-            destroyBlock(tile);
+            if (!hit_block_from_below) hit_block_from_below = true;
+            if (overlap.x > max_horizontal_overlap) {
+                max_horizontal_overlap = overlap.x;
+                hit_block_vertical_overlap = overlap.y;
+                block_to_destroy = tile;
+            }
             continue;
         } else if (overlapping && horizontal_collision && came_from_left) {
             player_transform.pos.x -= overlap.x;
@@ -454,6 +461,12 @@ void Scene_Play::sCollision() {
             continue;
         }
     }
+    if (hit_block_from_below) {
+        player_transform.pos.y += hit_block_vertical_overlap;
+        player_transform.velocity.y = 0;
+        destroyBlock(block_to_destroy);
+    }
+
     for (auto slime : m_entities.getEntities("Slime")) {
         // Player collision checking
         Vec2 overlap = Physics::GetOverlap(m_player, slime);
