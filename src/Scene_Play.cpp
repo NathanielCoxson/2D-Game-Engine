@@ -436,6 +436,7 @@ void Scene_Play::sCollision() {
         if (overlapping && vertical_collision && came_from_above) {
             if (player_state.on_flagpole) {
                 m_levelEnded = true;
+                m_levelWon = true;
                 m_playerScore += std::floor(player_state.flag_contact_height / 100) * 100;
                 return;
             }
@@ -483,6 +484,8 @@ void Scene_Play::sCollision() {
             continue;
         } else if (overlapping) {
             m_player->destroy();
+            m_levelEnded = true;
+            m_levelWon = false;
         }
 
         // Block collision checking
@@ -598,14 +601,20 @@ void Scene_Play::sRender() {
     }
     if (m_levelEnded) {
         sf::Text endingText;
-        endingText.setString("You Win!");
+        m_levelWon ? 
+            endingText.setString("You Win!") : 
+            endingText.setString("Game Over!");
         endingText.setFont(m_game->assets().getFont("PrimaryFont"));
         endingText.setCharacterSize(32);
         endingText.setFillColor(sf::Color::White);
-        endingText.setOrigin(endingText.getGlobalBounds().width / 2.0f,
-                endingText.getGlobalBounds().height / 2.0f);
-        endingText.setPosition(m_playerView.getCenter().x,
-                m_playerView.getCenter().y);
+        endingText.setOrigin(
+            endingText.getGlobalBounds().width / 2.0f,
+            endingText.getGlobalBounds().height / 2.0f
+        );
+        endingText.setPosition(
+            m_playerView.getCenter().x,
+            m_playerView.getCenter().y
+        );
         m_game->window().draw(endingText);
     }
 
