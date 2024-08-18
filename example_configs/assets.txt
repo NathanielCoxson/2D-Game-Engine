@@ -7,6 +7,9 @@ Texture MegaManRunTex ./src/assets/sprites/megaman_run.png
 Texture BulletTex ./src/assets/sprites/megaman_bullet.png
 Texture BulletExplosionTex ./src/assets/sprites/megaman_bullet_explosion.png
 Texture FlagpoleTex ./src/assets/tiles/flagpole.png
+Texture FlagTex ./src/assets/deco/flag.png
+Texture CoinTex ./src/assets/deco/coin.png
+Texture CastleTex ./src/assets/deco/castle.png
 Animation Block BlockTex 1 1
 Animation House HouseTex 1 1
 Animation Slime SlimeJumpTex 17 10
@@ -16,4 +19,7 @@ Animation MegaManRun MegaManRunTex 3 10
 Animation Bullet BulletTex 1 1
 Animation BulletExplosion BulletExplosionTex 4 10
 Animation Flagpole FlagpoleTex 1 1
-Font RobotoRegular ./bin/fonts/RobotoRegular.ttf
+Animation Flag FlagTex 1 1
+Animation Coin CoinTex 5 20 
+Animation Castle CastleTex 1 1
+Font PrimaryFont ./src/assets/fonts/MMRock9.ttf
