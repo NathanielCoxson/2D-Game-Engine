@@ -6,6 +6,7 @@
 #include "Vec2.hpp"
 #include <SFML/Graphics/Text.hpp>
 #include <memory>
+#include <fstream>
 
 class Scene_Play : public Scene {
     struct PlayerConfig {
@@ -31,6 +32,7 @@ protected:
     sf::Color               m_backgroundColor = sf::Color(100, 100, 255, 255);
     int                     m_levelWidth = 0;
     int                     m_playerScore = 0;
+    std::ofstream           m_replay_stream;
 
     void init(const std::string& levelPath);
     void onEnd();
