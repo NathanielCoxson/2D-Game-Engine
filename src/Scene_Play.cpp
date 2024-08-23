@@ -13,30 +13,36 @@ Scene_Play::Scene_Play(GameEngine *gameEngine, const std::string &levelPath)
 }
 
 void Scene_Play::init(const std::string &levelPath) {
-  // Debug and Control
-  registerAction(sf::Keyboard::P, "PAUSE");
-  registerAction(sf::Keyboard::Escape, "QUIT");
-  registerAction(sf::Keyboard::T, "TOGGLE_TEXTURE");
-  registerAction(sf::Keyboard::C, "TOGGLE_COLLISION");
-  registerAction(sf::Keyboard::G, "TOGGLE_GRID");
+    // Debug and Control
+    registerAction(sf::Keyboard::P, "PAUSE");
+    registerAction(sf::Keyboard::Escape, "QUIT");
+    registerAction(sf::Keyboard::T, "TOGGLE_TEXTURE");
+    registerAction(sf::Keyboard::C, "TOGGLE_COLLISION");
+    registerAction(sf::Keyboard::G, "TOGGLE_GRID");
 
-  // Gameplay
-  registerAction(sf::Keyboard::A, "LEFT");
-  registerAction(sf::Keyboard::D, "RIGHT");
-  registerAction(sf::Keyboard::W, "JUMP");
-  registerAction(sf::Keyboard::Space, "SHOOT");
+    // Gameplay
+    registerAction(sf::Keyboard::A, "LEFT");
+    registerAction(sf::Keyboard::D, "RIGHT");
+    registerAction(sf::Keyboard::W, "JUMP");
+    registerAction(sf::Keyboard::Space, "SHOOT");
 
-  m_gridText.setCharacterSize(12);
-  m_gridText.setFont(m_game->assets().getFont("PrimaryFont"));
+    m_gridText.setCharacterSize(12);
+    m_gridText.setFont(m_game->assets().getFont("PrimaryFont"));
 
-  m_scoreText.setCharacterSize(32);
-  m_scoreText.setFont(m_game->assets().getFont("PrimaryFont"));
-  m_scoreText.setFillColor(sf::Color::White);
+    m_scoreText.setCharacterSize(32);
+    m_scoreText.setFont(m_game->assets().getFont("PrimaryFont"));
+    m_scoreText.setFillColor(sf::Color::White);
 
-  loadLevel(m_levelPath);
+    loadLevel(m_levelPath);
 
-  m_playerView.setSize(
-      sf::Vector2f(m_game->window().getSize().x, m_game->window().getSize().y));
+    m_playerView.setSize(
+        sf::Vector2f(
+            m_game->window().getSize().x,
+            m_game->window().getSize().y
+        )
+    );
+
+    m_replay_stream.open("replays/replay.txt");
 }
 
 void Scene_Play::onEnd() {
@@ -233,6 +239,12 @@ void Scene_Play::update() {
 void Scene_Play::sDoAction(const Action &action) {
     auto &input = m_player->getComponent<CInput>();
     auto &state = m_player->getComponent<CState>();
+    if (m_replay_stream.is_open()) {
+        m_replay_stream 
+            << action.getType() << " " 
+            << action.getName() << " " 
+            << m_currentFrame   << "\n";
+    } 
 
     if (action.getType() == "START") {
         if (action.getName() == "LEFT" && !input.left) {
