@@ -43,6 +43,7 @@ void Scene_Play::init(const std::string &levelPath) {
     );
 
     m_replay_stream.open("replays/replay.txt");
+    m_replay_stream << m_levelPath << "\n";
 }
 
 void Scene_Play::onEnd() {
