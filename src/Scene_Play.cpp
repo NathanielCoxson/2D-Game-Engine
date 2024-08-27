@@ -49,6 +49,7 @@ void Scene_Play::init(const std::string &levelPath) {
 void Scene_Play::onEnd() {
   m_game->window().setView(m_game->window().getDefaultView());
   m_game->changeScene("menu", nullptr, true);
+  m_replay_stream.close();
 }
 
 Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY,
