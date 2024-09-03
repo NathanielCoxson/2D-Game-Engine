@@ -19,11 +19,12 @@ protected:
     std::shared_ptr<Entity> m_player;
     std::string             m_levelPath;
     PlayerConfig            m_playerConfig;
-    bool                    m_drawTextures = true;
+    bool                    m_drawTextures  = true;
     bool                    m_drawCollision = false;
-    bool                    m_drawGrid = false;
-    bool                    m_levelEnded = false;
-    bool                    m_levelWon = false;
+    bool                    m_drawGrid      = false;
+    bool                    m_levelEnded    = false;
+    bool                    m_levelWon      = false;
+    bool                    m_replay        = false;
     const Vec2              m_gridSize = { 64, 64 };
     sf::Text                m_gridText;
     sf::Text                m_scoreText;
@@ -33,6 +34,10 @@ protected:
     int                     m_levelWidth = 0;
     int                     m_playerScore = 0;
     std::ofstream           m_replay_stream;
+    std::map<
+        size_t,
+        Action* 
+    >                       m_replay_action_map;
 
     void init(const std::string& levelPath);
     void onEnd();
@@ -53,6 +58,7 @@ protected:
 
 public:
     Scene_Play(GameEngine* gameEngine, const std::string& levelPath);
+    Scene_Play(GameEngine* gameEngine, const std::string& levelPath, bool replay);
 
     void update();
 
