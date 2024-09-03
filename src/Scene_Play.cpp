@@ -9,7 +9,12 @@
 
 Scene_Play::Scene_Play(GameEngine *gameEngine, const std::string &levelPath)
     : Scene(gameEngine), m_levelPath(levelPath) {
-  init(levelPath);
+    init(levelPath);
+}
+
+Scene_Play::Scene_Play(GameEngine *gameEngine, const std::string &levelPath, bool replay)
+    : Scene(gameEngine), m_levelPath(levelPath), m_replay(replay) {
+    init(levelPath);
 }
 
 void Scene_Play::init(const std::string &levelPath) {
@@ -42,14 +47,31 @@ void Scene_Play::init(const std::string &levelPath) {
         )
     );
 
-    m_replay_stream.open("replays/replay.txt");
-    m_replay_stream << m_levelPath << "\n";
+    if (m_replay) {
+        std::ifstream replay_file("replays/replay.txt"); 
+
+        std::string type, name, level_path;
+        size_t frame;
+        replay_file >> level_path;
+        while (!replay_file.eof()) {
+            replay_file >> type >> name >> frame;
+            m_replay_action_map.insert(std::make_pair(frame, new Action(name, type)));
+        }
+
+        replay_file.close();
+    } else {
+        m_replay_stream.open("replays/replay.txt");
+        m_replay_stream << m_levelPath << "\n";
+    }
 }
 
 void Scene_Play::onEnd() {
-  m_game->window().setView(m_game->window().getDefaultView());
-  m_game->changeScene("menu", nullptr, true);
-  m_replay_stream.close();
+    if (!m_replay) {
+        m_replay_stream.close();
+    }
+
+    m_game->window().setView(m_game->window().getDefaultView());
+    m_game->changeScene("menu", nullptr, true);
 }
 
 Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY,
@@ -239,6 +261,10 @@ void Scene_Play::update() {
 }
 
 void Scene_Play::sDoAction(const Action &action) {
+    // Temporary solution to disable user input if there is no record
+    // of the input in the replay file's list of actions.
+    if (m_replay && !m_replay_action_map.count(m_currentFrame)) return;
+
     auto &input = m_player->getComponent<CInput>();
     auto &state = m_player->getComponent<CState>();
     if (m_replay_stream.is_open()) {
@@ -582,6 +608,11 @@ void Scene_Play::sCollision() {
 }
 
 void Scene_Play::sRender() {
+    // Do an action if the replay has one on the current frame
+    if (m_replay && m_replay_action_map.count(m_currentFrame)) {
+        sDoAction(*m_replay_action_map.at(m_currentFrame));
+    }
+
     // Update
     update();
 
@@ -638,24 +669,24 @@ void Scene_Play::sRender() {
 }
 
 void Scene_Play::spawnBullet() {
-  CTransform &player_transform = m_player->getComponent<CTransform>();
-  CAnimation &player_animation = m_player->getComponent<CAnimation>();
-  int direction = 1;
-  bool facing_left = player_animation.animation.getSprite().getScale().x > 0;
-  if (facing_left)
-    direction = -1;
+    CTransform &player_transform = m_player->getComponent<CTransform>();
+    CAnimation &player_animation = m_player->getComponent<CAnimation>();
+    int direction = 1;
+    bool facing_left = player_animation.animation.getSprite().getScale().x > 0;
+    if (facing_left)
+        direction = -1;
 
-  std::shared_ptr<Entity> bullet = m_entities.addEntity("Bullet");
+    std::shared_ptr<Entity> bullet = m_entities.addEntity("Bullet");
 
-  bullet->addComponent<CLifeSpan>(m_playerConfig.WEAPON_LIFESPAN);
+    bullet->addComponent<CLifeSpan>(m_playerConfig.WEAPON_LIFESPAN);
 
-  bullet->addComponent<CBoundingBox>(Vec2(16, 16));
+    bullet->addComponent<CBoundingBox>(Vec2(16, 16));
 
-  bullet->addComponent<CAnimation>(
-      m_game->assets().getAnimation(m_playerConfig.WEAPON));
-  bullet->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
+    bullet->addComponent<CAnimation>(m_game->assets().getAnimation(m_playerConfig.WEAPON));
+    bullet->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
 
-  bullet->addComponent<CTransform>(
-      player_transform.pos, Vec2(m_playerConfig.WEAPON_SPEED * direction, 0),
-      0);
+    bullet->addComponent<CTransform>(
+        player_transform.pos, Vec2(m_playerConfig.WEAPON_SPEED * direction, 0),
+        0
+    );
 }
