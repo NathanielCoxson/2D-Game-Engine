@@ -70,6 +70,8 @@ void Scene_Play::onEnd() {
         m_replay_stream.close();
     }
 
+    m_scene_ended = true;
+
     m_game->window().setView(m_game->window().getDefaultView());
     m_game->changeScene("menu", nullptr, true);
 }
@@ -612,6 +614,7 @@ void Scene_Play::sRender() {
     if (m_replay && m_replay_action_map.count(m_currentFrame)) {
         sDoAction(*m_replay_action_map.at(m_currentFrame));
     }
+    if (m_scene_ended) return;
 
     // Update
     update();
