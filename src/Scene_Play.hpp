@@ -25,6 +25,7 @@ protected:
     bool                    m_levelEnded    = false;
     bool                    m_levelWon      = false;
     bool                    m_replay        = false;
+    bool                    m_scene_ended   = false;
     const Vec2              m_gridSize = { 64, 64 };
     sf::Text                m_gridText;
     sf::Text                m_scoreText;
