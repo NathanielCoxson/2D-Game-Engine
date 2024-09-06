@@ -2,6 +2,7 @@
 #include "Scene_Play.hpp"
 #include "Action.hpp"
 #include <fstream>
+#include <iostream>
 
 Scene_Menu::Scene_Menu(GameEngine* gameEngine)
     : Scene(gameEngine)
@@ -21,13 +22,6 @@ void Scene_Menu::init() {
     m_menuText.setFillColor(sf::Color::White);
     m_menuText.setCharacterSize(24);
     m_menuText.setFont(m_game->assets().getFont("PrimaryFont"));
-
-    //std::ifstream replay_file;
-    //std::string replay_level_path;
-    //if (replay_file.is_open()) {
-    //    replay_file >> replay_level_path;
-    //}
-    //replay_file.close();
 
     m_levelPaths.push_back("bin/level_1.txt");
     m_levelPaths.push_back("bin/level_2.txt");
@@ -53,9 +47,16 @@ void Scene_Menu::sDoAction(const Action& action) {
         } else if (action.getName() == "DOWN") {
             m_selectedMenuIndex = (m_selectedMenuIndex + 1) % m_menuStrings.size();
         } else if (action.getName() == "PLAY") {
+            std::ifstream replay_file("replays/replay.txt");
+            std::string replay_level_path;
+            if (replay_file.is_open()) {
+                replay_file >> replay_level_path;
+            }
+            replay_file.close();
+
             // change game engine scene to current index
             if (m_selectedMenuIndex == m_levelPaths.size() - 1) {
-                m_game->changeScene("level", std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex], true));
+                m_game->changeScene("level", std::make_shared<Scene_Play>(m_game, replay_level_path, true));
             } else {
                 m_game->changeScene("level", std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
             }
