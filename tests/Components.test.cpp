@@ -24,3 +24,23 @@ TEST_CASE("CAnimation correctly initializes the animation data member.") {
     CHECK(animation.animation.getSize().x == 0);
     CHECK(animation.animation.getSize().y == 0);
 }
+
+TEST_CASE("CCooldown correctly inserts a cooldown.") {
+    CCooldown cooldowns = CCooldown();
+    cooldowns.registerCooldown("ATTACK", 100);
+
+    CHECK(cooldowns.cooldown_map["ATTACK"] == 100);
+}
+
+TEST_CASE("CCooldownnnn correctly decrements cooldowns.") {
+    CCooldown cooldowns = CCooldown();
+    cooldowns.registerCooldown("ATTACK", 2);
+
+    CHECK(cooldowns.cooldown_map["ATTACK"] == 2);
+    cooldowns.update();
+    CHECK(cooldowns.cooldown_map["ATTACK"] == 1);
+    cooldowns.update();
+    CHECK(cooldowns.cooldown_map["ATTACK"] == 0);
+    cooldowns.update();
+    CHECK(cooldowns.cooldown_map["ATTACK"] == 0);
+}
