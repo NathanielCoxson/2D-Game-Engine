@@ -3,6 +3,7 @@
 #include "Vec2.hpp"
 #include <SFML/Graphics.hpp>
 #include "Animation.hpp"
+#include <map>
 
 class Component {
 
@@ -125,4 +126,25 @@ public:
     int flag_contact_height = 0;
     int jump_frame_count = 0;
     CState() {}
+};
+
+class CCooldown : public Component {
+
+public:
+    std::map<std::string, size_t> cooldown_map;
+
+    CCooldown() {};
+    void update() {
+        std::map<std::string, size_t>::iterator it;
+
+        for (it = cooldown_map.begin(); it != cooldown_map.end(); it++) {
+            if (it->second > 0) {
+                it->second--;
+            }
+        }
+    }
+    void registerCooldown(std::string name, size_t duration) {
+        cooldown_map[name] = duration;
+    }
+
 };
