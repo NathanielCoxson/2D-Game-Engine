@@ -29,18 +29,22 @@ TEST_CASE("CCooldown correctly inserts a cooldown.") {
     CCooldown cooldowns = CCooldown();
     cooldowns.registerCooldown("ATTACK", 100);
 
-    CHECK(cooldowns.cooldown_map["ATTACK"] == 100);
+    CHECK(cooldowns.cooldowns["ATTACK"][0] == 100);
+    CHECK(cooldowns.cooldowns["ATTACK"][1] == 100);
 }
 
-TEST_CASE("CCooldownnnn correctly decrements cooldowns.") {
+TEST_CASE("CCooldown correctly decrements cooldowns.") {
     CCooldown cooldowns = CCooldown();
     cooldowns.registerCooldown("ATTACK", 2);
 
-    CHECK(cooldowns.cooldown_map["ATTACK"] == 2);
+    CHECK(cooldowns.cooldowns["ATTACK"][0] == 2);
     cooldowns.update();
-    CHECK(cooldowns.cooldown_map["ATTACK"] == 1);
+    CHECK(cooldowns.cooldowns["ATTACK"][0] == 1);
+    CHECK(cooldowns.cooldowns["ATTACK"][1] == 2);
     cooldowns.update();
-    CHECK(cooldowns.cooldown_map["ATTACK"] == 0);
+    CHECK(cooldowns.cooldowns["ATTACK"][0] == 0);
+    CHECK(cooldowns.cooldowns["ATTACK"][1] == 2);
     cooldowns.update();
-    CHECK(cooldowns.cooldown_map["ATTACK"] == 0);
+    CHECK(cooldowns.cooldowns["ATTACK"][0] == 0);
+    CHECK(cooldowns.cooldowns["ATTACK"][1] == 2);
 }

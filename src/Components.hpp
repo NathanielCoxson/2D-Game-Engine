@@ -131,20 +131,20 @@ public:
 class CCooldown : public Component {
 
 public:
-    std::map<std::string, size_t> cooldown_map;
+    std::map<std::string, std::vector<size_t>> cooldowns;
 
     CCooldown() {};
     void update() {
-        std::map<std::string, size_t>::iterator it;
+        std::map<std::string, std::vector<size_t>>::iterator it;
 
-        for (it = cooldown_map.begin(); it != cooldown_map.end(); it++) {
-            if (it->second > 0) {
-                it->second--;
+        for (it = cooldowns.begin(); it != cooldowns.end(); it++) {
+            if (it->second[0] > 0) {
+                it->second[0]--;
             }
         }
     }
     void registerCooldown(std::string name, size_t duration) {
-        cooldown_map[name] = duration;
+        cooldowns[name] = std::vector<size_t>{duration, duration};
     }
 
 };
