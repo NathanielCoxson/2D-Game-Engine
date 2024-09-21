@@ -48,3 +48,14 @@ TEST_CASE("CCooldown correctly decrements cooldowns.") {
     CHECK(cooldowns.cooldowns["ATTACK"][0] == 0);
     CHECK(cooldowns.cooldowns["ATTACK"][1] == 2);
 }
+
+TEST_CASE("CCooldown correctly resets cooldowns.") {
+    CCooldown cooldowns = CCooldown();
+    cooldowns.registerCooldown("ATTACK", 10);
+
+    CHECK(cooldowns.getCooldown("ATTACK") == 10);
+    cooldowns.update();
+    CHECK(cooldowns.getCooldown("ATTACK") == 9);
+    cooldowns.startCooldown("ATTACK");
+    CHECK(cooldowns.getCooldown("ATTACK") == 10);
+}

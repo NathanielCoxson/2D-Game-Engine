@@ -146,5 +146,13 @@ public:
     void registerCooldown(std::string name, size_t duration) {
         cooldowns[name] = std::vector<size_t>{duration, duration};
     }
-
+    void removeCooldown(std::string name) {
+        cooldowns.erase(name);
+    }
+    void startCooldown(std::string name) {
+        cooldowns[name][0] = cooldowns[name][1];
+    }
+    size_t getCooldown(std::string name) {
+        return cooldowns[name][0]; 
+    }
 };
