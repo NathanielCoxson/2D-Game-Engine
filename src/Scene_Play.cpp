@@ -188,6 +188,12 @@ void Scene_Play::loadLevel(const std::string &path) {
       auto &state = m_player->addComponent<CState>();
 
       auto &gravity = m_player->addComponent<CGravity>(m_playerConfig.GRAVITY);
+
+      auto &cooldowns = m_player->addComponent<CCooldown>();
+
+      cooldowns.registerCooldown("ATTACK", 60);
+      cooldowns.cooldowns["ATTACK"][0] = 0;
+
     } else {
       fin >> asset_type;
     }
@@ -231,6 +237,9 @@ void Scene_Play::update() {
                 e->removeComponent<CLifeSpan>();
             }
         }
+        if (e->hasComponent<CCooldown>()) {
+            e->getComponent<CCooldown>().update();
+        }
     }
 
     // Score text update
@@ -269,6 +278,7 @@ void Scene_Play::sDoAction(const Action &action) {
 
     auto &input = m_player->getComponent<CInput>();
     auto &state = m_player->getComponent<CState>();
+    auto &cooldowns = m_player->getComponent<CCooldown>();
     if (m_replay_stream.is_open()) {
         m_replay_stream 
             << action.getType() << " " 
@@ -284,10 +294,14 @@ void Scene_Play::sDoAction(const Action &action) {
         } else if (action.getName() == "JUMP") {
             input.up = true;
         } else if (action.getName() == "SHOOT") {
-            bool can_shoot = state.can_shoot && !state.on_flagpole;
+            bool can_shoot = 
+                state.can_shoot && 
+                !state.on_flagpole &&
+                cooldowns.getCooldown("ATTACK") <= 0;
             if (can_shoot) {
                 spawnBullet();
                 m_player->getComponent<CState>().can_shoot = false;
+                cooldowns.startCooldown("ATTACK");
             }
         } else if (action.getName() == "QUIT") {
             onEnd();
