@@ -155,4 +155,7 @@ public:
     size_t getCooldown(std::string name) {
         return cooldowns[name][0]; 
     }
+    void clearCooldown(std::string name) {
+        cooldowns[name][0] = 0;
+    }
 };
