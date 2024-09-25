@@ -192,7 +192,7 @@ void Scene_Play::loadLevel(const std::string &path) {
       auto &cooldowns = m_player->addComponent<CCooldown>();
 
       cooldowns.registerCooldown("ATTACK", 60);
-      cooldowns.cooldowns["ATTACK"][0] = 0;
+      cooldowns.clearCooldown("ATTACK");
 
     } else {
       fin >> asset_type;
