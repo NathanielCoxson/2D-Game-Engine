@@ -66,3 +66,17 @@ TEST_CASE("CGravity is initialized correctly.") {
     
     CHECK(std::abs(gravity.gravity - 0.8) <= epsilon);
 }
+
+TEST_CASE("CTransform is initialized correctly.") {
+    CTransform transform = CTransform(Vec2(2, 4), Vec2(10, 20), 0);
+
+    CHECK(transform.pos.x == 2);
+    CHECK(transform.pos.y == 4);
+    CHECK(transform.prevPos.y == 4);
+    CHECK(transform.prevPos.y == 4);
+    CHECK(transform.velocity.x == 10);
+    CHECK(transform.velocity.y == 20);
+    CHECK(transform.angle == 0);
+    CHECK(transform.scale.x == 1);
+    CHECK(transform.scale.y == 1);
+}
