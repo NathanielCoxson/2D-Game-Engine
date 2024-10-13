@@ -59,3 +59,10 @@ TEST_CASE("CCooldown correctly resets cooldowns.") {
     cooldowns.startCooldown("ATTACK");
     CHECK(cooldowns.getCooldown("ATTACK") == 10);
 }
+
+TEST_CASE("CGravity is initialized correctly.") {
+    float epsilon = 0.01;
+    CGravity gravity = CGravity(0.8);
+    
+    CHECK(std::abs(gravity.gravity - 0.8) <= epsilon);
+}
