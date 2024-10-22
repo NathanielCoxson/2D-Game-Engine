@@ -26,8 +26,15 @@ protected:
     bool                    m_levelWon      = false;
     bool                    m_replay        = false;
     bool                    m_scene_ended   = false;
+    std::vector<
+        sf::RectangleShape
+    >                       m_gridLines     = {};
+    std::vector<
+        sf::Text
+    >                       m_gridLabels    = {};
+    const int               m_labelFontSize = 10;
+    const int               m_labelPadding  = 8;
     const Vec2              m_gridSize = { 64, 64 };
-    sf::Text                m_gridText;
     sf::Text                m_scoreText;
     int                     m_scoreTextPadding = 12;
     sf::View                m_playerView;

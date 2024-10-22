@@ -31,14 +31,45 @@ void Scene_Play::init(const std::string &levelPath) {
     registerAction(sf::Keyboard::W, "JUMP");
     registerAction(sf::Keyboard::Space, "SHOOT");
 
-    m_gridText.setCharacterSize(12);
-    m_gridText.setFont(m_game->assets().getFont("PrimaryFont"));
-
     m_scoreText.setCharacterSize(32);
     m_scoreText.setFont(m_game->assets().getFont("PrimaryFont"));
     m_scoreText.setFillColor(sf::Color::White);
 
     loadLevel(m_levelPath);
+
+    // Construct grid
+    auto windowSize = m_game->window().getSize();
+    auto& font = m_game->assets().getFont("PrimaryFont");
+    for (int row = 0; row < m_levelWidth; row++) {
+        // Horizontal line
+        sf::RectangleShape horizontalLine(sf::Vector2f(m_gridSize.x * m_levelWidth, 2.0f));
+        horizontalLine.setFillColor(sf::Color::Blue);
+        horizontalLine.setPosition(0, windowSize.y - m_gridSize.x * row);
+        m_gridLines.push_back(horizontalLine);
+
+        // Vertical line
+        sf::RectangleShape verticalLine(sf::Vector2f(2.0f, m_gridSize.x * m_levelWidth));
+        verticalLine.setFillColor(sf::Color::Blue);
+        verticalLine.setPosition(m_gridSize.x * row, 0);
+        m_gridLines.push_back(verticalLine);
+
+        for (int col = 0; col < m_levelWidth; col++) {
+            // Labels
+            sf::Text label;
+            label.setCharacterSize(m_labelFontSize);
+            label.setFont(font);
+            label.setFillColor(sf::Color::Blue);
+            label.setOutlineColor(sf::Color::Blue);
+            std::stringstream ss;
+            ss << row << ", " << col;
+            label.setString(ss.str());
+            label.setPosition(
+                row * m_gridSize.x + m_labelPadding,
+                windowSize.y - m_gridSize.y * (col + 1) + m_labelPadding
+            );
+            m_gridLabels.push_back(label);
+        }
+    }
 
     m_playerView.setSize(
         sf::Vector2f(
@@ -325,6 +356,9 @@ void Scene_Play::sDoAction(const Action &action) {
                 m_drawTextures = false;
             else
                 m_drawTextures = true;
+        } else if (action.getName() == "TOGGLE_GRID") {
+            if (m_drawGrid) m_drawGrid = false;
+            else m_drawGrid = true;
         }
     }
 }
@@ -678,6 +712,14 @@ void Scene_Play::sRender() {
             m_playerView.getCenter().y
         );
         m_game->window().draw(endingText);
+    }
+    if (m_drawGrid) {
+        for (auto line : m_gridLines) {
+            m_game->window().draw(line);
+        }
+        for (auto label : m_gridLabels) {
+            m_game->window().draw(label);
+        }
     }
 
     // Display
