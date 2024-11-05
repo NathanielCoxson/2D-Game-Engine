@@ -22,6 +22,7 @@ Installation:
   - Use the command: `make` in the root directory to build and run the game.
     - Optionally you can use `make build` to first build the game and then `make run` to run.
 ### Geometry Shooter
+![](https://github.com/NathanielCoxson/2D-Game-Engine/blob/main/documentation_files/geometry_shooter_clip.gif)
   - A simple shooter game where the player fires projectiles to destory enemy shapes and score points.
   - Controls:
     - `LMB` will fire a bullet in the direction of the cursor
