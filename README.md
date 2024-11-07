@@ -28,3 +28,9 @@ Installation:
     - `LMB` will fire a bullet in the direction of the cursor
     - `Space` will fire a special weapon
     - `p` will pause the game
+### Platformer
+![](https://github.com/NathanielCoxson/2D-Game-Engine/blob/228-add-a-gameplay-demo-to-readme/documentation_files/platformer_clip.gif)
+  - A demo of a simple platformer based on Super Mario and Megaman
+  - W A S D movement
+  - Uses level files that can be easily edited
+  - Includes saveable replays
