@@ -21,7 +21,7 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-replays/*
+replays/replay.txt
 x64/
 x86/
 [Ww][Ii][Nn]32/
