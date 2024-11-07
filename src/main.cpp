@@ -2,7 +2,7 @@
 
 int main() {
 
-    Game game("bin/config.txt");
+    Game game("config/config.txt");
 
     game.run();
 
