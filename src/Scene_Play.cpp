@@ -107,128 +107,122 @@ void Scene_Play::onEnd() {
     m_game->changeScene("menu", nullptr, true);
 }
 
-Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY,
-                                std::shared_ptr<Entity> entity) {
-  auto &Animation = entity->getComponent<CAnimation>();
+Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity) {
+    auto &Animation = entity->getComponent<CAnimation>();
 
-  float x = m_gridSize.x * gridX +
-            (Animation.animation.getSprite().getGlobalBounds().width / 2.0f);
-  float y = m_gridSize.y * gridY +
-            (Animation.animation.getSprite().getGlobalBounds().height / 2.0f);
+    float x = m_gridSize.x * gridX + (Animation.animation.getSprite().getGlobalBounds().width / 2.0f);
+    float y = m_gridSize.y * gridY + (Animation.animation.getSprite().getGlobalBounds().height / 2.0f);
 
-  return Vec2(x, m_game->window().getSize().y - y);
+    return Vec2(x, m_game->window().getSize().y - y);
 }
 
 void Scene_Play::loadLevel(const std::string &path) {
 
-  std::ifstream fin(path);
-  while (!fin.eof()) {
-    std::string asset_type;
-    fin >> asset_type;
+    std::ifstream fin(path);
+    while (!fin.eof()) {
+        std::string asset_type;
+        fin >> asset_type;
 
-    if (asset_type == "Tile") {
-      std::string N;
-      float X, Y, SX, SY;
-      fin >> N >> X >> Y >> SX >> SY;
+        if (asset_type == "Tile") {
+            std::string N;
+            float X, Y, SX, SY;
+            fin >> N >> X >> Y >> SX >> SY;
 
-      if (int(X) > m_levelWidth)
-        m_levelWidth = int(X);
+            if (int(X) > m_levelWidth)
+                m_levelWidth = int(X);
 
-      // Animation
-      std::shared_ptr<Entity> tile = m_entities.addEntity(N);
-      auto &animation =
-          tile->addComponent<CAnimation>(m_game->assets().getAnimation(N));
-      animation.animation.getSprite().setScale(SX, SY);
+            // Animation
+            std::shared_ptr<Entity> tile = m_entities.addEntity(N);
+            auto &animation = tile->addComponent<CAnimation>(m_game->assets().getAnimation(N));
+            animation.animation.getSprite().setScale(SX, SY);
 
-      // Sprite positioning
-      Vec2 pos = gridToMidPixel(X, Y, tile);
-      animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+            // Sprite positioning
+            Vec2 pos = gridToMidPixel(X, Y, tile);
+            animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
 
-      // Bounding boxes
-      if (N == "Block") {
-        tile->addComponent<CBoundingBox>(Vec2(m_gridSize.x, m_gridSize.y));
-      } else if (N == "Flagpole") {
-        CBoundingBox& boundingBox = tile->addComponent<CBoundingBox>(
-            Vec2(
-                animation.animation.getSize().x * SX / 2.0f,
-                animation.animation.getSize().y * SY / 1.25f
-            )
-        );
-        auto flag = m_entities.addEntity("Flag");
-        CAnimation& flagAnimation = flag->addComponent<CAnimation>(m_game->assets().getAnimation("Flag"));
+            // Bounding boxes
+            if (N == "Block") {
+                tile->addComponent<CBoundingBox>(Vec2(m_gridSize.x, m_gridSize.y));
+            } else if (N == "Flagpole") {
+                CBoundingBox& boundingBox = tile->addComponent<CBoundingBox>(
+                    Vec2(
+                        animation.animation.getSize().x * SX / 2.0f,
+                        animation.animation.getSize().y * SY / 1.25f
+                    )
+                );
+                auto flag = m_entities.addEntity("Flag");
+                CAnimation& flagAnimation = flag->addComponent<CAnimation>(m_game->assets().getAnimation("Flag"));
 
-        Vec2 flagPos = Vec2(
-            pos.x - (flagAnimation.animation.getSprite().getTexture()->getSize().x),
-            pos.y + boundingBox.halfSize.y - flagAnimation.animation.getSprite().getTexture()->getSize().y
-        );
-        flagAnimation.animation.getSprite().setPosition(flagPos.x, flagPos.y);
-        flagAnimation.animation.getSprite().setScale(SX, SY);
-        flag->addComponent<CTransform>(flagPos, Vec2(0, 0), 0);
-      }
+                Vec2 flagPos = Vec2(
+                    pos.x - (flagAnimation.animation.getSprite().getTexture()->getSize().x),
+                    pos.y + boundingBox.halfSize.y - flagAnimation.animation.getSprite().getTexture()->getSize().y
+                );
+                flagAnimation.animation.getSprite().setPosition(flagPos.x, flagPos.y);
+                flagAnimation.animation.getSprite().setScale(SX, SY);
+                flag->addComponent<CTransform>(flagPos, Vec2(0, 0), 0);
+            }
 
-      // Transforms
-      auto &transform = tile->addComponent<CTransform>(pos, Vec2(0, 0), 0);
-      transform.scale = Vec2(SX, SY);
-    } else if (asset_type == "Dec") {
-      std::string N;
-      float X, Y, SX, SY;
-      fin >> N >> X >> Y >> SX >> SY;
+            // Transforms
+            auto &transform = tile->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            transform.scale = Vec2(SX, SY);
+        } else if (asset_type == "Dec") {
+            std::string N;
+            float X, Y, SX, SY;
+            fin >> N >> X >> Y >> SX >> SY;
+            std::string tag = N;
 
-      if (int(X) > m_levelWidth)
-        m_levelWidth = int(X);
+            if (int(X) > m_levelWidth) m_levelWidth = int(X);
 
-      std::shared_ptr<Entity> dec = m_entities.addEntity(N);
-      auto &animation =
-          dec->addComponent<CAnimation>(m_game->assets().getAnimation(N));
+            // TODO: Refactor this to use a single 'Enemy' tag
+            if (N == "Toad" || N == "Slime") tag = "Slime";
 
-      animation.animation.getSprite().setScale(SX, SY);
+            std::shared_ptr<Entity> dec = m_entities.addEntity(tag);
+            auto &animation = dec->addComponent<CAnimation>(m_game->assets().getAnimation(N));
 
-      Vec2 pos = gridToMidPixel(X, Y, dec);
-      animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
+            animation.animation.getSprite().setScale(SX, SY);
 
-      if (N == "Slime") {
-          dec->addComponent<CBoundingBox>(Vec2(64, 64));
-          dec->addComponent<CTransform>(pos, Vec2(2, 0), 0);
-      } else if (N == "Coin") {
-          dec->addComponent<CBoundingBox>(Vec2(32, 32));
-          dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
-      }
-    } else if (asset_type == "Player") {
-      fin >> m_playerConfig.X >> m_playerConfig.Y;
-      fin >> m_playerConfig.CX >> m_playerConfig.CY;
-      fin >> m_playerConfig.SX >> m_playerConfig.SY >> m_playerConfig.MAXSPEED;
-      fin >> m_playerConfig.GRAVITY;
-      fin >> m_playerConfig.WEAPON >> m_playerConfig.WEAPON_SPEED >>
-          m_playerConfig.WEAPON_LIFESPAN;
-      fin >> m_playerConfig.XSCALE >> m_playerConfig.YSCALE;
+            Vec2 pos = gridToMidPixel(X, Y, dec);
+            animation.animation.getSprite().setPosition(sf::Vector2f(pos.x, pos.y));
 
-      m_player = m_entities.addEntity("Player");
+            if (N == "Slime" || N == "Toad") {
+                dec->addComponent<CBoundingBox>(Vec2(64, 64));
+                dec->addComponent<CTransform>(pos, Vec2(2, 0), 0);
+            } else if (N == "Coin") {
+                dec->addComponent<CBoundingBox>(Vec2(32, 32));
+                dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            }
+        } else if (asset_type == "Player") {
+            fin >> m_playerConfig.X >> m_playerConfig.Y;
+            fin >> m_playerConfig.CX >> m_playerConfig.CY;
+            fin >> m_playerConfig.SX >> m_playerConfig.SY >> m_playerConfig.MAXSPEED;
+            fin >> m_playerConfig.GRAVITY;
+            fin >> m_playerConfig.WEAPON >> m_playerConfig.WEAPON_SPEED >> m_playerConfig.WEAPON_LIFESPAN;
+            fin >> m_playerConfig.XSCALE >> m_playerConfig.YSCALE;
 
-      auto &animation = m_player->addComponent<CAnimation>(
-          m_game->assets().getAnimation("MegaManIdle"));
-      animation.animation.getSprite().setScale(m_playerConfig.XSCALE,
-                                               m_playerConfig.YSCALE);
+            m_player = m_entities.addEntity("Player");
 
-      Vec2 pos = gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, m_player);
-      auto &transform = m_player->addComponent<CTransform>(pos, Vec2(0, 0), 0);
-      transform.scale = Vec2(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+            auto &animation = m_player->addComponent<CAnimation>(m_game->assets().getAnimation("MegaManIdle"));
+            animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
 
-      auto &bb = m_player->addComponent<CBoundingBox>(
-          Vec2(m_playerConfig.CX, m_playerConfig.CY));
+            Vec2 pos = gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, m_player);
+            auto &transform = m_player->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            transform.scale = Vec2(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
 
-      auto &state = m_player->addComponent<CState>();
+            auto &bb = m_player->addComponent<CBoundingBox>(Vec2(m_playerConfig.CX, m_playerConfig.CY));
 
-      auto &gravity = m_player->addComponent<CGravity>(m_playerConfig.GRAVITY);
+            auto &state = m_player->addComponent<CState>();
 
-      auto &cooldowns = m_player->addComponent<CCooldown>();
+            auto &gravity = m_player->addComponent<CGravity>(m_playerConfig.GRAVITY);
 
-      cooldowns.registerCooldown("ATTACK", 60);
-      cooldowns.clearCooldown("ATTACK");
+            auto &cooldowns = m_player->addComponent<CCooldown>();
 
-    } else {
-      fin >> asset_type;
+            cooldowns.registerCooldown("ATTACK", 60);
+            cooldowns.clearCooldown("ATTACK");
+
+        } else {
+            fin >> asset_type;
+        }
     }
-  }
 }
 
 void Scene_Play::update() {
@@ -418,8 +412,7 @@ void Scene_Play::sMovement() {
             if (t.velocity.y < m_playerConfig.MAXSPEED * -1)
                 t.velocity.y = m_playerConfig.MAXSPEED * -1;
             e->getComponent<CTransform>().prevPos = e->getComponent<CTransform>().pos;
-            e->getComponent<CTransform>().pos +=
-                e->getComponent<CTransform>().velocity;
+            e->getComponent<CTransform>().pos += e->getComponent<CTransform>().velocity;
         }
     }
 }
@@ -559,6 +552,9 @@ void Scene_Play::sCollision() {
     }
 
     for (auto slime : m_entities.getEntities("Slime")) {
+        CTransform &transform = slime->getComponent<CTransform>();
+        CAnimation &animation = slime->getComponent<CAnimation>();
+
         // Player collision checking
         Vec2 overlap = Physics::GetOverlap(m_player, slime);
         Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, slime);
@@ -586,17 +582,19 @@ void Scene_Play::sCollision() {
             bool overlapping = overlap.y >= 0 && overlap.x >= 0;
             bool horizontal_collision = prevOverlap.y > 0;
             if (overlapping && horizontal_collision) {
-                slime->getComponent<CTransform>().velocity.x *= -1;
+                transform.velocity.x *= -1;
+                auto& scale = animation.animation.getSprite().getScale();
+                animation.animation.getSprite().setScale(scale.x * -1, scale.y);
             }
         }
 
         // Level boundary collision checking
-        CTransform &transform = slime->getComponent<CTransform>();
         CBoundingBox &boundingBox = slime->getComponent<CBoundingBox>();
-        if (transform.pos.x - boundingBox.halfSize.x <= 0 ||
-                transform.pos.x + boundingBox.halfSize.x >=
-                (m_levelWidth + 1) * m_gridSize.x) {
+        if (transform.pos.x - boundingBox.halfSize.x <= 0 || 
+            transform.pos.x + boundingBox.halfSize.x >= (m_levelWidth + 1) * m_gridSize.x) {
             transform.velocity.x *= -1;
+            auto& scale = animation.animation.getSprite().getScale();
+            animation.animation.getSprite().setScale(scale.x * -1, scale.y);
         }
     }
     for (auto bullet : m_entities.getEntities("Bullet")) {
