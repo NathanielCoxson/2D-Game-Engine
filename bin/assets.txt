@@ -10,6 +10,7 @@ Texture FlagpoleTex ./src/assets/tiles/flagpole.png
 Texture FlagTex ./src/assets/deco/flag.png
 Texture CoinTex ./src/assets/deco/coin.png
 Texture CastleTex ./src/assets/deco/castle.png
+Texture ToadJumpTex ./src/assets/sprites/toad_jump.png
 Animation Block BlockTex 1 1
 Animation House HouseTex 1 1
 Animation Slime SlimeJumpTex 17 10
@@ -22,4 +23,5 @@ Animation Flagpole FlagpoleTex 1 1
 Animation Flag FlagTex 1 1
 Animation Coin CoinTex 5 20 
 Animation Castle CastleTex 1 1
+Animation Toad ToadJumpTex 6 10
 Font PrimaryFont ./src/assets/fonts/MMRock9.ttf
