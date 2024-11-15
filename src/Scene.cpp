@@ -44,6 +44,16 @@ const ActionMap& Scene::getActionMap() const {
     return m_actionMap;
 }
 
-// TODO: implement when entity manager is updated
 void Scene::drawLine(const Vec2& p1, const Vec2& p2) {
+    const float  width  = std::abs(p1.x - p2.x);
+    const float  height = 2;
+    sf::Vector2f size   = sf::Vector2(width, height);
+    sf::Color    color  = sf::Color::Blue;
+
+    sf::RectangleShape line;
+    line.setPosition(p1.x, p1.y);
+    line.setSize(size);
+    line.setFillColor(color);
+
+    m_game->window().draw(line);
 }
