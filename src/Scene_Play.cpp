@@ -109,9 +109,16 @@ void Scene_Play::onEnd() {
 
 Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity) {
     auto &Animation = entity->getComponent<CAnimation>();
+    auto bounds = Animation.animation.getSprite().getGlobalBounds();
 
-    float x = m_gridSize.x * gridX + (Animation.animation.getSprite().getGlobalBounds().width / 2.0f);
-    float y = m_gridSize.y * gridY + (Animation.animation.getSprite().getGlobalBounds().height / 2.0f);
+    float x = 
+        m_gridSize.x * 
+        gridX + 
+        (bounds.width / 2.0f);
+    float y = 
+        m_gridSize.y * 
+        gridY + 
+        (bounds.height / 2.0f);
 
     return Vec2(x, m_game->window().getSize().y - y);
 }
@@ -244,8 +251,7 @@ void Scene_Play::update() {
             }
             animation.animation.update();
 
-            bool animationEnded =
-                !animation.animation.isInfinite() && animation.animation.hasEnded();
+            bool animationEnded = !animation.animation.isInfinite() && animation.animation.hasEnded();
             if (animationEnded) {
                 e->destroy();
                 continue;
@@ -254,8 +260,7 @@ void Scene_Play::update() {
         if (e->hasComponent<CLifeSpan>()) {
             e->getComponent<CLifeSpan>().remaining--;
             if (e->tag() == "Bullet" && e->getComponent<CLifeSpan>().remaining <= 0) {
-                e->getComponent<CAnimation>().animation =
-                    m_game->assets().getAnimation("BulletExplosion");
+                e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
                 e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
                 e->getComponent<CAnimation>().animation.setInfinite(false);
                 e->getComponent<CTransform>().velocity = Vec2(0, 0);
@@ -290,8 +295,10 @@ void Scene_Play::update() {
             m_game->window().getSize().y / 2.0f
         );
     } else {
-        m_playerView.setCenter(sf::Vector2f(player_transform.pos.x,
-            m_game->window().getSize().y / 2.0f));
+        m_playerView.setCenter(sf::Vector2f(
+            player_transform.pos.x,
+            m_game->window().getSize().y / 2.0f
+        ));
     }
 
 }
@@ -358,13 +365,13 @@ void Scene_Play::sDoAction(const Action &action) {
 }
 
 void Scene_Play::sMovement() {
-    CInput input = m_player->getComponent<CInput>();
-    CTransform &player_transform = m_player->getComponent<CTransform>();
-    CAnimation &player_animation = m_player->getComponent<CAnimation>();
-    CState &player_state = m_player->getComponent<CState>();
-    CGravity &player_gravity = m_player->getComponent<CGravity>();
+    CInput      input            = m_player->getComponent<CInput>();
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    CState&     player_state     = m_player->getComponent<CState>();
+    CGravity&   player_gravity   = m_player->getComponent<CGravity>();
 
-    Vec2 player_velocity(0, m_player->getComponent<CTransform>().velocity.y);
+    Vec2 player_velocity(0, player_transform.velocity.y);
     if (input.left) {
         player_velocity.x -= m_playerConfig.SX;
     }
@@ -418,54 +425,52 @@ void Scene_Play::sMovement() {
 }
 
 void Scene_Play::sAnimation() {
-  CTransform &player_transform = m_player->getComponent<CTransform>();
-  CAnimation &player_animation = m_player->getComponent<CAnimation>();
-  CState &player_state = m_player->getComponent<CState>();
-  CInput &input = m_player->getComponent<CInput>();
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    CState&     player_state     = m_player->getComponent<CState>();
+    CInput&     input            = m_player->getComponent<CInput>();
 
-  if (m_levelEnded) {
-      auto scale = player_animation.animation.getSprite().getScale();
-      player_animation.animation = m_game->assets().getAnimation("MegaManIdle");
-      player_animation.animation.getSprite().setScale(scale);
-      return;
-  }
-
-  bool is_idle = !input.left && !input.right;
-  bool net_zero_horizontal_movement = input.left && input.right;
-  bool player_has_run_animation =
-      player_animation.animation.getName() == "MegaManRun";
-  bool player_facing_left =
-      player_animation.animation.getSprite().getScale().x > 0;
-
-  if (input.left && (!player_has_run_animation || !player_facing_left)) {
-    player_animation.animation = m_game->assets().getAnimation("MegaManRun");
-    player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE,
-                                                    m_playerConfig.YSCALE);
-  }
-  if (input.right && (!player_has_run_animation || player_facing_left)) {
-    player_animation.animation = m_game->assets().getAnimation("MegaManRun");
-    player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1,
-                                                    m_playerConfig.YSCALE);
-  }
-
-  if (is_idle || net_zero_horizontal_movement) {
-    if (player_animation.animation.getName() != "MegaManIdle") {
-      float direction = player_animation.animation.getSprite().getScale().x /
-                        m_playerConfig.XSCALE;
-
-      player_animation.animation = m_game->assets().getAnimation("MegaManIdle");
-      player_animation.animation.getSprite().setScale(
-          m_playerConfig.XSCALE * direction, m_playerConfig.YSCALE);
+    if (m_levelEnded) {
+        auto scale = player_animation.animation.getSprite().getScale();
+        player_animation.animation = m_game->assets().getAnimation("MegaManIdle");
+        player_animation.animation.getSprite().setScale(scale);
+        return;
     }
-  }
-  if (!player_state.on_ground) {
-    float direction = player_animation.animation.getSprite().getScale().x /
-                      m_playerConfig.XSCALE;
 
-    player_animation.animation = m_game->assets().getAnimation("MegaManJump");
-    player_animation.animation.getSprite().setScale(
-        player_transform.scale.x * direction, player_transform.scale.y);
-  }
+    bool is_idle = !input.left && !input.right;
+    bool net_zero_horizontal_movement = input.left && input.right;
+    bool player_has_run_animation = player_animation.animation.getName() == "MegaManRun";
+    bool player_facing_left = player_animation.animation.getSprite().getScale().x > 0;
+
+    if (input.left && (!player_has_run_animation || !player_facing_left)) {
+        player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+        player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE, m_playerConfig.YSCALE);
+    }
+    if (input.right && (!player_has_run_animation || player_facing_left)) {
+        player_animation.animation = m_game->assets().getAnimation("MegaManRun");
+        player_animation.animation.getSprite().setScale(m_playerConfig.XSCALE * -1, m_playerConfig.YSCALE);
+    }
+
+    if (is_idle || net_zero_horizontal_movement) {
+        if (player_animation.animation.getName() != "MegaManIdle") {
+            float direction = player_animation.animation.getSprite().getScale().x / m_playerConfig.XSCALE;
+
+            player_animation.animation = m_game->assets().getAnimation("MegaManIdle");
+            player_animation.animation.getSprite().setScale(
+                m_playerConfig.XSCALE * direction,
+                m_playerConfig.YSCALE
+            );
+        }
+    }
+    if (!player_state.on_ground) {
+        float direction = player_animation.animation.getSprite().getScale().x / m_playerConfig.XSCALE;
+
+        player_animation.animation = m_game->assets().getAnimation("MegaManJump");
+        player_animation.animation.getSprite().setScale(
+            player_transform.scale.x * direction,
+            player_transform.scale.y
+        );
+    }
 }
 
 void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
@@ -476,46 +481,45 @@ void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
     coin->getComponent<CAnimation>().animation.getSprite().setScale(2.5, 2.5);
     coin->getComponent<CAnimation>().animation.setSpeed(5);
     coin->getComponent<CAnimation>().animation.setInfinite(false);
+    // TODO: pull this magic number into a constant
     m_playerScore += 100;
 
-    e->getComponent<CAnimation>().animation =
-        m_game->assets().getAnimation("BulletExplosion");
+    e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
     e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
     e->getComponent<CAnimation>().animation.setInfinite(false);
     e->removeComponent<CBoundingBox>();
-
 }
 
 void Scene_Play::destroyEnemy(std::shared_ptr<Entity> e) {
     e->destroy();
+    // TODO: pull this magic number into a constant
     m_playerScore += 100;
 }
 
 void Scene_Play::sCollision() {
-    CState &player_state = m_player->getComponent<CState>();
-    CTransform &player_transform = m_player->getComponent<CTransform>();
+    CState&                 player_state               = m_player->getComponent<CState>();
+    CTransform&             player_transform           = m_player->getComponent<CTransform>();
+    bool                    hit_block_from_below       = false;
+    float                   max_horizontal_overlap     = 0;
+    float                   hit_block_vertical_overlap = 0;
+    std::shared_ptr<Entity> block_to_destroy           = nullptr;
 
     player_state.on_ground = false;
-    bool hit_block_from_below = false;
-    float max_horizontal_overlap = 0;
-    float hit_block_vertical_overlap = 0;
-    std::shared_ptr<Entity> block_to_destroy = nullptr;
+
     for (auto tile : m_entities.getEntities("Block")) {
-        Vec2 overlap = Physics::GetOverlap(m_player, tile);
-        Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, tile);
+        Vec2  overlap     = Physics::GetOverlap(m_player, tile);
+        Vec2  prevOverlap = Physics::GetPreviousOverlap(m_player, tile);
+        auto& tile_transform   = tile->getComponent<CTransform>();
 
         bool overlapping = overlap.y >= 0 && overlap.x >= 0;
         bool vertical_collision = prevOverlap.x > 0;
         bool horizontal_collision = prevOverlap.y > 0;
-        bool came_from_above =
-            player_transform.pos.y <= tile->getComponent<CTransform>().pos.y;
-        bool came_from_below =
-            player_transform.pos.y >= tile->getComponent<CTransform>().pos.y;
-        bool came_from_left =
-            player_transform.pos.x <= tile->getComponent<CTransform>().pos.x;
-        bool came_from_right =
-            player_transform.pos.x >= tile->getComponent<CTransform>().pos.x;
+        bool came_from_above = player_transform.pos.y <= tile_transform.pos.y;
+        bool came_from_below = player_transform.pos.y >= tile_transform.pos.y;
+        bool came_from_left  = player_transform.pos.x <= tile_transform.pos.x;
+        bool came_from_right = player_transform.pos.x >= tile_transform.pos.x;
 
+        // TODO: pull these conditions into meaningful variables
         if (overlapping && vertical_collision && came_from_above) {
             if (player_state.on_flagpole) {
                 m_levelEnded = true;
@@ -552,18 +556,17 @@ void Scene_Play::sCollision() {
     }
 
     for (auto slime : m_entities.getEntities("Slime")) {
-        CTransform &transform = slime->getComponent<CTransform>();
-        CAnimation &animation = slime->getComponent<CAnimation>();
+        CTransform& transform = slime->getComponent<CTransform>();
+        CAnimation& animation = slime->getComponent<CAnimation>();
 
         // Player collision checking
-        Vec2 overlap = Physics::GetOverlap(m_player, slime);
+        Vec2 overlap     = Physics::GetOverlap(m_player, slime);
         Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, slime);
 
-        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-        bool vertical_collision = prevOverlap.x > 0;
+        bool overlapping          = overlap.y >= 0 && overlap.x >= 0;
+        bool vertical_collision   = prevOverlap.x > 0;
         bool horizontal_collision = prevOverlap.y > 0;
-        bool came_from_above =
-            player_transform.pos.y <= slime->getComponent<CTransform>().pos.y;
+        bool came_from_above      = player_transform.pos.y <= transform.pos.y;
 
         if (overlapping && vertical_collision && came_from_above) {
             destroyEnemy(slime);
@@ -576,10 +579,10 @@ void Scene_Play::sCollision() {
 
         // Block collision checking
         for (auto block : m_entities.getEntities("Block")) {
-            Vec2 overlap = Physics::GetOverlap(block, slime);
+            Vec2 overlap     = Physics::GetOverlap(block, slime);
             Vec2 prevOverlap = Physics::GetPreviousOverlap(block, slime);
 
-            bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+            bool overlapping          = overlap.y >= 0 && overlap.x >= 0;
             bool horizontal_collision = prevOverlap.y > 0;
             if (overlapping && horizontal_collision) {
                 transform.velocity.x *= -1;
@@ -589,7 +592,7 @@ void Scene_Play::sCollision() {
         }
 
         // Level boundary collision checking
-        CBoundingBox &boundingBox = slime->getComponent<CBoundingBox>();
+        CBoundingBox& boundingBox = slime->getComponent<CBoundingBox>();
         if (transform.pos.x - boundingBox.halfSize.x <= 0 || 
             transform.pos.x + boundingBox.halfSize.x >= (m_levelWidth + 1) * m_gridSize.x) {
             transform.velocity.x *= -1;
@@ -599,9 +602,9 @@ void Scene_Play::sCollision() {
     }
     for (auto bullet : m_entities.getEntities("Bullet")) {
         for (auto tile : m_entities.getEntities("Block")) {
-            CTransform &bullet_transform = bullet->getComponent<CTransform>();
-            Vec2 overlap = Physics::GetOverlap(tile, bullet);
-            Vec2 prevOverlap = Physics::GetPreviousOverlap(tile, bullet);
+            CTransform& bullet_transform = bullet->getComponent<CTransform>();
+            Vec2        overlap          = Physics::GetOverlap(tile, bullet);
+            Vec2        prevOverlap      = Physics::GetPreviousOverlap(tile, bullet);
 
             bool overlapping = overlap.y >= 0 && overlap.x >= 0;
             if (overlapping) {
@@ -610,19 +613,19 @@ void Scene_Play::sCollision() {
             }
         }
         for (auto slime : m_entities.getEntities("Slime")) {
-            CTransform &bullet_transform = bullet->getComponent<CTransform>();
-            Vec2 overlap = Physics::GetOverlap(slime, bullet);
-            Vec2 prevOverlap = Physics::GetPreviousOverlap(slime, bullet);
+            CTransform& bullet_transform = bullet->getComponent<CTransform>();
+            Vec2        overlap          = Physics::GetOverlap(slime, bullet);
+            Vec2        prevOverlap      = Physics::GetPreviousOverlap(slime, bullet);
 
             bool overlapping = overlap.y >= 0 && overlap.x >= 0;
             if (overlapping) {
                 bullet->destroy();
-                slime->getComponent<CAnimation>().animation =
-                    m_game->assets().getAnimation("BulletExplosion");
+                slime->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
                 slime->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
                 slime->getComponent<CAnimation>().animation.setInfinite(false);
                 slime->getComponent<CTransform>().velocity = Vec2(0, 0);
                 slime->removeComponent<CBoundingBox>();
+                // TODO: move value to constant
                 m_playerScore += 100;
             }
         }
@@ -631,7 +634,6 @@ void Scene_Play::sCollision() {
         Vec2 overlap = Physics::GetOverlap(m_player, coin);
 
         bool overlapping = overlap.y >= 0 && overlap.x >= 0;
-
         if (overlapping) {
             m_playerScore += 200;
             coin->removeComponent<CBoundingBox>();
@@ -641,7 +643,7 @@ void Scene_Play::sCollision() {
 
     // Flagpole collision checking
     for (auto flagpole : m_entities.getEntities("Flagpole")) {
-        Vec2 overlap = Physics::GetOverlap(m_player, flagpole);
+        Vec2 overlap     = Physics::GetOverlap(m_player, flagpole);
         Vec2 prevOverlap = Physics::GetPreviousOverlap(m_player, flagpole);
 
         bool overlapping = overlap.y >= 0 && overlap.x >= 0;
@@ -673,18 +675,17 @@ void Scene_Play::sRender() {
     for (auto e : m_entities.getEntities()) {
         if (e->hasComponent<CAnimation>()) {
             if (m_drawTextures) {
-                m_game->window().draw(
-                        e->getComponent<CAnimation>().animation.getSprite());
+                m_game->window().draw(e->getComponent<CAnimation>().animation.getSprite());
             }
         }
         if (e->hasComponent<CBoundingBox>()) {
             if (m_drawCollision) {
-                auto &transform = e->getComponent<CTransform>();
-                auto &bb = e->getComponent<CBoundingBox>();
+                auto& transform = e->getComponent<CTransform>();
+                auto& bb        = e->getComponent<CBoundingBox>();
+
                 sf::RectangleShape outline;
                 outline.setSize(sf::Vector2f(bb.size.x, bb.size.y));
-                outline.setOrigin(
-                        sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
+                outline.setOrigin(sf::Vector2f(outline.getSize().x / 2, outline.getSize().y / 2));
                 outline.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
                 outline.setOutlineThickness(2);
                 outline.setOutlineColor(sf::Color::Blue);
@@ -726,22 +727,18 @@ void Scene_Play::sRender() {
 }
 
 void Scene_Play::spawnBullet() {
-    CTransform &player_transform = m_player->getComponent<CTransform>();
-    CAnimation &player_animation = m_player->getComponent<CAnimation>();
-    int direction = 1;
+    CTransform& player_transform = m_player->getComponent<CTransform>();
+    CAnimation& player_animation = m_player->getComponent<CAnimation>();
+    int         direction        = 1;
+
     bool facing_left = player_animation.animation.getSprite().getScale().x > 0;
-    if (facing_left)
-        direction = -1;
+    if (facing_left) direction = -1;
 
     std::shared_ptr<Entity> bullet = m_entities.addEntity("Bullet");
-
     bullet->addComponent<CLifeSpan>(m_playerConfig.WEAPON_LIFESPAN);
-
     bullet->addComponent<CBoundingBox>(Vec2(16, 16));
-
     bullet->addComponent<CAnimation>(m_game->assets().getAnimation(m_playerConfig.WEAPON));
     bullet->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
-
     bullet->addComponent<CTransform>(
         player_transform.pos, Vec2(m_playerConfig.WEAPON_SPEED * direction, 0),
         0
