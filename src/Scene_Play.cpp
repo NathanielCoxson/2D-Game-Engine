@@ -481,8 +481,8 @@ void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
     coin->getComponent<CAnimation>().animation.getSprite().setScale(2.5, 2.5);
     coin->getComponent<CAnimation>().animation.setSpeed(5);
     coin->getComponent<CAnimation>().animation.setInfinite(false);
-    // TODO: pull this magic number into a constant
-    m_playerScore += 100;
+    
+    m_playerScore += m_coinValue;
 
     e->getComponent<CAnimation>().animation = m_game->assets().getAnimation("BulletExplosion");
     e->getComponent<CAnimation>().animation.getSprite().setScale(4, 4);
@@ -492,8 +492,7 @@ void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
 
 void Scene_Play::destroyEnemy(std::shared_ptr<Entity> e) {
     e->destroy();
-    // TODO: pull this magic number into a constant
-    m_playerScore += 100;
+    m_playerScore += m_coinValue;
 }
 
 void Scene_Play::sCollision() {
@@ -524,7 +523,7 @@ void Scene_Play::sCollision() {
             if (player_state.on_flagpole) {
                 m_levelEnded = true;
                 m_levelWon = true;
-                m_playerScore += std::floor(player_state.flag_contact_height / 100) * 100;
+                m_playerScore += std::floor(player_state.flag_contact_height / m_coinValue) * m_coinValue;
                 return;
             }
             player_state.on_ground = true;
@@ -625,8 +624,8 @@ void Scene_Play::sCollision() {
                 slime->getComponent<CAnimation>().animation.setInfinite(false);
                 slime->getComponent<CTransform>().velocity = Vec2(0, 0);
                 slime->removeComponent<CBoundingBox>();
-                // TODO: move value to constant
-                m_playerScore += 100;
+
+                m_playerScore += m_coinValue;
             }
         }
     }
@@ -635,7 +634,7 @@ void Scene_Play::sCollision() {
 
         bool overlapping = overlap.y >= 0 && overlap.x >= 0;
         if (overlapping) {
-            m_playerScore += 200;
+            m_playerScore += m_coinValue;
             coin->removeComponent<CBoundingBox>();
             coin->destroy();
         }

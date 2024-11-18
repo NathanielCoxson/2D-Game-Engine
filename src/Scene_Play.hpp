@@ -19,28 +19,29 @@ protected:
     std::shared_ptr<Entity> m_player;
     std::string             m_levelPath;
     PlayerConfig            m_playerConfig;
-    bool                    m_drawTextures  = true;
-    bool                    m_drawCollision = false;
-    bool                    m_drawGrid      = false;
-    bool                    m_levelEnded    = false;
-    bool                    m_levelWon      = false;
-    bool                    m_replay        = false;
-    bool                    m_scene_ended   = false;
+    bool                    m_drawTextures     = true;
+    bool                    m_drawCollision    = false;
+    bool                    m_drawGrid         = false;
+    bool                    m_levelEnded       = false;
+    bool                    m_levelWon         = false;
+    bool                    m_replay           = false;
+    bool                    m_scene_ended      = false;
     std::vector<
         sf::RectangleShape
-    >                       m_gridLines     = {};
-    std::vector<
+    >                       m_gridLines        = {};
+    std::vector <
         sf::Text
-    >                       m_gridLabels    = {};
-    const int               m_labelFontSize = 10;
-    const int               m_labelPadding  = 8;
-    const Vec2              m_gridSize = { 64, 64 };
+    >                       m_gridLabels       = {};
+    const int               m_labelFontSize    = 10;
+    const int               m_labelPadding     = 8;
+    const Vec2              m_gridSize         = { 64, 64 };
+    const size_t            m_coinValue        = 100;
     sf::Text                m_scoreText;
     int                     m_scoreTextPadding = 12;
     sf::View                m_playerView;
-    sf::Color               m_backgroundColor = sf::Color(100, 100, 255, 255);
-    int                     m_levelWidth = 0;
-    int                     m_playerScore = 0;
+    sf::Color               m_backgroundColor  = sf::Color(100, 100, 255, 255);
+    int                     m_levelWidth       = 0;
+    int                     m_playerScore      = 0;
     std::ofstream           m_replay_stream;
     std::map<
         size_t,
