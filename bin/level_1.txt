@@ -29,4 +29,5 @@ Tile Flagpole 14.25 1 2 2
 Dec Castle 16 1 2.5 2.5 
 Dec House 0 1 2 2 
 Dec Slime 5 1 0.5 0.5 
+Dec Gumball 7.2 4.2 2.5 2.5 
 Player 1 1 48 48 5 -20 20 0.75 Bullet 10 45 2 2
