@@ -197,6 +197,9 @@ void Scene_Play::loadLevel(const std::string &path) {
             } else if (N == "Coin") {
                 dec->addComponent<CBoundingBox>(Vec2(32, 32));
                 dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
+            } else if (N == "Gumball") {
+                dec->addComponent<CBoundingBox>(Vec2(32, 32));
+                dec->addComponent<CTransform>(pos, Vec2(0, 0), 0);
             }
         } else if (asset_type == "Player") {
             fin >> m_playerConfig.X >> m_playerConfig.Y;
@@ -637,6 +640,14 @@ void Scene_Play::sCollision() {
             m_playerScore += m_coinValue;
             coin->removeComponent<CBoundingBox>();
             coin->destroy();
+        }
+    }
+    for (auto gumball : m_entities.getEntities("Gumball")) {
+        Vec2 overlap = Physics::GetOverlap(m_player, gumball);
+
+        bool overlapping = overlap.y >= 0 && overlap.x >= 0;
+        if (overlapping) {
+            gumball->destroy();
         }
     }
 
