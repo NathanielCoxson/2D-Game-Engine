@@ -159,3 +159,12 @@ public:
         cooldowns[name][0] = 0;
     }
 };
+
+class CEffects : public Component {
+
+public:
+    bool applies_buff = false;
+    bool applies_invicibility = false;
+
+    CEffects() {};
+};
