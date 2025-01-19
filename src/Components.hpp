@@ -165,6 +165,7 @@ class CEffects : public Component {
 public:
     bool applies_buff = false;
     bool applies_invicibility = false;
+    bool isInvincible = false;
 
     CEffects() {};
 };

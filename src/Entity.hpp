@@ -29,9 +29,10 @@ class Entity {
     Entity(const size_t id, const std::string& tag);
 
 public:
-    bool               isActive() const;
-    const std::string& tag()      const;
-    const size_t       id()       const;
+    bool               isActive()       const;
+    bool               canBeDestroyed() const;
+    const std::string& tag()            const;
+    const size_t       id()             const;
     void               destroy();
 
     template <typename T, typename... TArgs>
