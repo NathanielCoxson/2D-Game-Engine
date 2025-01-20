@@ -30,7 +30,6 @@ class Entity {
 
 public:
     bool               isActive()       const;
-    bool               canBeDestroyed() const;
     const std::string& tag()            const;
     const size_t       id()             const;
     void               destroy();

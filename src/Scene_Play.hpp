@@ -52,6 +52,7 @@ protected:
     void onEnd();
     void loadLevel(const std::string& path);
     Vec2 gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);
+    bool canDestroyEntity(std::shared_ptr<Entity> entity);
 
     void spawnBullet();
 

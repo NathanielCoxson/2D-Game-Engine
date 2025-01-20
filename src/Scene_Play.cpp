@@ -123,6 +123,17 @@ Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity
     return Vec2(x, m_game->window().getSize().y - y);
 }
 
+bool Scene_Play::canDestroyEntity(std::shared_ptr<Entity> e) {
+
+    CEffects &effects = e->getComponent<CEffects>();
+
+    bool isInvincible = e->hasComponent<CEffects>() && effects.isInvincible;
+
+    if (isInvincible) return false;
+
+    return true;
+}
+
 void Scene_Play::loadLevel(const std::string &path) {
 
     std::ifstream fin(path);
