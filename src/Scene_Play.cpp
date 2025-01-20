@@ -123,6 +123,16 @@ Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity
     return Vec2(x, m_game->window().getSize().y - y);
 }
 
+bool Scene_Play::canDestroyEntity(std::shared_ptr<Entity> e) {
+
+    CState &state= e->getComponent<CState>();
+
+    bool is_invincible = e->hasComponent<CState>() && state.is_invincible;
+    if (is_invincible) return false;
+
+    return true;
+}
+
 void Scene_Play::loadLevel(const std::string &path) {
 
     std::ifstream fin(path);
@@ -272,6 +282,14 @@ void Scene_Play::update() {
         }
         if (e->hasComponent<CCooldown>()) {
             e->getComponent<CCooldown>().update();
+        }
+        if (e->hasComponent<CState>()) {
+            CState &state = e->getComponent<CState>();
+
+            if (state.is_invincible) {
+                state.invincibility_timer--;
+                if (state.invincibility_timer == 0) state.is_invincible = false;
+            }
         }
     }
 
@@ -498,6 +516,14 @@ void Scene_Play::destroyEnemy(std::shared_ptr<Entity> e) {
     m_playerScore += m_coinValue;
 }
 
+void Scene_Play::destroyPlayer() {
+    if (canDestroyEntity(m_player)) {
+        m_player->destroy();
+        m_levelEnded = true;
+        m_levelWon = false;
+    }
+}
+
 void Scene_Play::sCollision() {
     CState&                 player_state               = m_player->getComponent<CState>();
     CTransform&             player_transform           = m_player->getComponent<CTransform>();
@@ -574,9 +600,7 @@ void Scene_Play::sCollision() {
             destroyEnemy(slime);
             continue;
         } else if (overlapping) {
-            m_player->destroy();
-            m_levelEnded = true;
-            m_levelWon = false;
+            destroyPlayer();
         }
 
         // Block collision checking
@@ -647,6 +671,12 @@ void Scene_Play::sCollision() {
 
         bool overlapping = overlap.y >= 0 && overlap.x >= 0;
         if (overlapping) {
+            CState &state = m_player->getComponent<CState>();
+            state.is_invincible = true;
+            // TODO: Make this value represent a number in seconds
+            // when updates are no longer tied to framerate.
+            state.invincibility_timer = 1000;
+
             gumball->destroy();
         }
     }

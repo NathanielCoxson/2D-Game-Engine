@@ -123,8 +123,12 @@ public:
     bool on_ground = true;
     bool can_shoot = true;
     bool on_flagpole = false;
+    bool is_invincible = false;
+
     int flag_contact_height = 0;
     int jump_frame_count = 0;
+    
+    size_t invincibility_timer = 0;
     CState() {}
 };
 

@@ -52,11 +52,13 @@ protected:
     void onEnd();
     void loadLevel(const std::string& path);
     Vec2 gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);
+    bool canDestroyEntity(std::shared_ptr<Entity> entity);
 
     void spawnBullet();
 
     void destroyBlock(std::shared_ptr<Entity> e);
     void destroyEnemy(std::shared_ptr<Entity> e);
+    void destroyPlayer();
 
     void sDoAction(const Action& action);
     void sAnimation();
