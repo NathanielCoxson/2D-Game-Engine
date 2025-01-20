@@ -58,6 +58,7 @@ protected:
 
     void destroyBlock(std::shared_ptr<Entity> e);
     void destroyEnemy(std::shared_ptr<Entity> e);
+    void destroyPlayer();
 
     void sDoAction(const Action& action);
     void sAnimation();
