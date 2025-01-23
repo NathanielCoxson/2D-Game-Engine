@@ -3,6 +3,8 @@
 #include "Scene_Play.hpp"
 #include <fstream>
 #include <iostream>
+#include <chrono>
+#include <cstdint>
 
 GameEngine::GameEngine(const std::string& path)
     : m_assets()
@@ -12,6 +14,10 @@ GameEngine::GameEngine(const std::string& path)
 }
 
 void GameEngine::init(const std::string& path) {
+    // TODO: move this into a function or use a namespace to improve readability
+    m_currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    m_prevTime = m_currTime;
+
     std::ifstream fin(path);
     while (!fin.eof()) {
         std::string asset_type;
@@ -42,7 +48,9 @@ void GameEngine::init(const std::string& path) {
 }
 
 void GameEngine::update() {
-
+    m_prevTime = m_currTime; 
+    m_currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    m_deltaTime = m_currTime - m_prevTime;
 }
 
 void GameEngine::sUserInput() {

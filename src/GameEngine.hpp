@@ -4,6 +4,9 @@
 #include "Scene.hpp"
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <ctime>
+#include <chrono>
+#include <cstdint>
 
 class Scene;
 
@@ -18,6 +21,10 @@ protected:
     SceneMap         m_sceneMap;
     size_t           m_simulationSpeed = 1;
     bool             m_running = true;
+    uint64_t         m_prevTime;
+    uint64_t         m_currTime;
+    uint64_t         m_deltaTime;
+    
 
     void init(const std::string& path);
     void update();
