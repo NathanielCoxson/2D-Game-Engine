@@ -675,7 +675,7 @@ void Scene_Play::sCollision() {
             state.is_invincible = true;
             // TODO: Make this value represent a number in seconds
             // when updates are no longer tied to framerate.
-            state.invincibility_timer = 1000;
+            state.invincibility_timer = 500;
 
             gumball->destroy();
         }
@@ -731,6 +731,20 @@ void Scene_Play::sRender() {
                 outline.setOutlineColor(sf::Color::Blue);
                 outline.setFillColor(sf::Color::Transparent);
                 m_game->window().draw(outline);
+            }
+        }
+        if (e->hasComponent<CState>()) {
+            CState     &state = e->getComponent<CState>();
+            CTransform &transform = e->getComponent<CTransform>();
+
+            // Draw a barrier if the entity is invincible
+            if (state.is_invincible) {
+                sf::Sprite barrier;
+                barrier.setScale(transform.scale.x * 1.5f, transform.scale.y * 1.5f);
+                barrier.setTexture(m_game->assets().getTexture("BarrierTex"));
+                barrier.setOrigin(barrier.getTexture()->getSize().x / 2.0f, barrier.getTexture()->getSize().y / 2.0f);
+                barrier.setPosition(transform.pos.x, transform.pos.y);
+                m_game->window().draw(barrier);
             }
         }
     }

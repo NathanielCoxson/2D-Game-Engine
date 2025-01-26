@@ -12,6 +12,7 @@ Texture CoinTex ./src/assets/deco/coin.png
 Texture CastleTex ./src/assets/deco/castle.png
 Texture ToadJumpTex ./src/assets/sprites/toad_jump.png
 Texture GumballTex ./src/assets/sprites/gumball.png
+Texture BarrierTex ./src/assets/deco/barrier.png
 Animation Block BlockTex 1 1
 Animation House HouseTex 1 1
 Animation Slime SlimeJumpTex 17 10
