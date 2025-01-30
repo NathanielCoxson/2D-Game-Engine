@@ -127,7 +127,7 @@ bool Scene_Play::canDestroyEntity(std::shared_ptr<Entity> e) {
 
     CState &state= e->getComponent<CState>();
 
-    bool is_invincible = e->hasComponent<CState>() && state.is_invincible;
+    bool is_invincible = e->hasComponent<CState>() && state.timers.count("invincibility");
     if (is_invincible) return false;
 
     return true;
@@ -286,9 +286,10 @@ void Scene_Play::update() {
         if (e->hasComponent<CState>()) {
             CState &state = e->getComponent<CState>();
 
-            if (state.is_invincible) {
-                state.invincibility_timer--;
-                if (state.invincibility_timer == 0) state.is_invincible = false;
+            for (auto it = state.timers.begin(); it != state.timers.end(); it++) {
+                if (--it->second <= 0) {
+                    state.timers.erase(it);
+                }
             }
         }
     }
@@ -672,10 +673,9 @@ void Scene_Play::sCollision() {
         bool overlapping = overlap.y >= 0 && overlap.x >= 0;
         if (overlapping) {
             CState &state = m_player->getComponent<CState>();
-            state.is_invincible = true;
             // TODO: Make this value represent a number in seconds
             // when updates are no longer tied to framerate.
-            state.invincibility_timer = 500;
+            state.timers["invincibility"] = 500;
 
             gumball->destroy();
         }
@@ -738,7 +738,7 @@ void Scene_Play::sRender() {
             CTransform &transform = e->getComponent<CTransform>();
 
             // Draw a barrier if the entity is invincible
-            if (state.is_invincible) {
+            if (state.timers.count("invincibility")) {
                 sf::Sprite barrier;
                 barrier.setScale(transform.scale.x * 1.5f, transform.scale.y * 1.5f);
                 barrier.setTexture(m_game->assets().getTexture("BarrierTex"));
