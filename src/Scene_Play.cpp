@@ -35,6 +35,8 @@ void Scene_Play::init(const std::string &levelPath) {
     m_scoreText.setFont(m_game->assets().getFont("PrimaryFont"));
     m_scoreText.setFillColor(sf::Color::White);
 
+    m_energyBar.setFillColor(sf::Color::Yellow);
+
     loadLevel(m_levelPath);
 
     // Construct grid
@@ -217,6 +219,7 @@ void Scene_Play::loadLevel(const std::string &path) {
             fin >> m_playerConfig.SX >> m_playerConfig.SY >> m_playerConfig.MAXSPEED;
             fin >> m_playerConfig.GRAVITY;
             fin >> m_playerConfig.WEAPON >> m_playerConfig.WEAPON_SPEED >> m_playerConfig.WEAPON_LIFESPAN;
+            fin >> m_playerConfig.FIRERATE;
             fin >> m_playerConfig.XSCALE >> m_playerConfig.YSCALE;
 
             m_player = m_entities.addEntity("Player");
@@ -236,7 +239,7 @@ void Scene_Play::loadLevel(const std::string &path) {
 
             auto &cooldowns = m_player->addComponent<CCooldown>();
 
-            cooldowns.registerCooldown("ATTACK", 60);
+            cooldowns.registerCooldown("ATTACK", m_playerConfig.FIRERATE);
             cooldowns.clearCooldown("ATTACK");
 
         } else {
@@ -447,10 +450,11 @@ void Scene_Play::sMovement() {
 }
 
 void Scene_Play::sAnimation() {
-    CTransform& player_transform = m_player->getComponent<CTransform>();
-    CAnimation& player_animation = m_player->getComponent<CAnimation>();
-    CState&     player_state     = m_player->getComponent<CState>();
-    CInput&     input            = m_player->getComponent<CInput>();
+    CTransform&   player_transform = m_player->getComponent<CTransform>();
+    CAnimation&   player_animation = m_player->getComponent<CAnimation>();
+    CBoundingBox& player_bb        = m_player->getComponent<CBoundingBox>();
+    CState&       player_state     = m_player->getComponent<CState>();
+    CInput&       input            = m_player->getComponent<CInput>();
 
     if (m_levelEnded) {
         auto scale = player_animation.animation.getSprite().getScale();
@@ -493,6 +497,23 @@ void Scene_Play::sAnimation() {
             player_transform.scale.y
         );
     }
+
+    // Energy bar
+    CCooldown &cooldowns = m_player->getComponent<CCooldown>();
+    float energyPercentage = 1 - cooldowns.getCooldown("ATTACK") / m_playerConfig.FIRERATE;
+    float playerWidth = player_bb.size.x;
+    float energyBarWidth = playerWidth * energyPercentage;
+
+    // Hide the bar when it is finished charging
+    if (energyBarWidth >= playerWidth) {
+        m_energyBar.setSize(sf::Vector2f(0, m_energyBarHeight));
+    } else {
+        m_energyBar.setSize(sf::Vector2f(energyBarWidth, m_energyBarHeight));
+    }
+    m_energyBar.setPosition(
+        player_transform.pos.x - player_bb.size.x / 2,
+        player_transform.pos.y + player_bb.size.y / 2
+    );
 }
 
 void Scene_Play::destroyBlock(std::shared_ptr<Entity> e) {
@@ -711,7 +732,6 @@ void Scene_Play::sRender() {
     m_game->window().clear(m_backgroundColor);
 
     // Draw
-    m_game->window().draw(m_scoreText);
     for (auto e : m_entities.getEntities()) {
         if (e->hasComponent<CAnimation>()) {
             if (m_drawTextures) {
@@ -748,6 +768,9 @@ void Scene_Play::sRender() {
             }
         }
     }
+    m_game->window().draw(m_scoreText);
+    m_game->window().draw(m_energyBar);
+
     if (m_levelEnded) {
         sf::Text endingText;
         m_levelWon ? 
