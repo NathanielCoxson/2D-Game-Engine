@@ -38,5 +38,6 @@ Player GX GY CW CH SX SY SM GY B SCX SCY
  - Bullet Animation    B         std::string (Animation asset to use for bullets)
  - Bullet Speed        BS        float
  - Bullet Lifespan     BL        float
+ - Firerate            FR        float
  - X Scale             SCX       float
  - Y Scale             SCY       float
