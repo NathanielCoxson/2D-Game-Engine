@@ -39,6 +39,7 @@ protected:
     sf::Text                m_scoreText;
     int                     m_scoreTextPadding = 12;
     sf::RectangleShape      m_energyBar;
+    sf::RectangleShape      m_energyBarOutline;
     float                   m_energyBarHeight  = 6;
     sf::View                m_playerView;
     sf::Color               m_backgroundColor  = sf::Color(100, 100, 255, 255);

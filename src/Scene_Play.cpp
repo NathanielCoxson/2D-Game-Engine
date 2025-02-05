@@ -37,6 +37,8 @@ void Scene_Play::init(const std::string &levelPath) {
 
     m_energyBar.setFillColor(sf::Color::Yellow);
 
+    m_energyBarOutline.setOutlineThickness(2);
+
     loadLevel(m_levelPath);
 
     // Construct grid
@@ -507,10 +509,19 @@ void Scene_Play::sAnimation() {
     // Hide the bar when it is finished charging
     if (energyBarWidth >= playerWidth) {
         m_energyBar.setSize(sf::Vector2f(0, m_energyBarHeight));
+        m_energyBarOutline.setOutlineColor(sf::Color::Transparent);
+        m_energyBarOutline.setFillColor(sf::Color::Transparent);
     } else {
         m_energyBar.setSize(sf::Vector2f(energyBarWidth, m_energyBarHeight));
+        m_energyBarOutline.setSize(sf::Vector2f(playerWidth, m_energyBarHeight));
+        m_energyBarOutline.setOutlineColor(sf::Color::Black);
+        m_energyBarOutline.setFillColor(sf::Color::Transparent);
     }
     m_energyBar.setPosition(
+        player_transform.pos.x - player_bb.size.x / 2,
+        player_transform.pos.y + player_bb.size.y / 2
+    );
+    m_energyBarOutline.setPosition(
         player_transform.pos.x - player_bb.size.x / 2,
         player_transform.pos.y + player_bb.size.y / 2
     );
@@ -770,6 +781,7 @@ void Scene_Play::sRender() {
     }
     m_game->window().draw(m_scoreText);
     m_game->window().draw(m_energyBar);
+    m_game->window().draw(m_energyBarOutline);
 
     if (m_levelEnded) {
         sf::Text endingText;
