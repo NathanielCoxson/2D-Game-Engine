@@ -28,4 +28,4 @@ Animation Castle CastleTex 1 1
 Animation Toad ToadJumpTex 6 10
 Animation Gumball GumballTex 7 10
 Font PrimaryFont ./src/assets/fonts/MMRock9.ttf
-Sound Gunshot ./src/assets/sounds/gunshot.mp3
+Sound Gunshot ./src/assets/sounds/gunshot.wav

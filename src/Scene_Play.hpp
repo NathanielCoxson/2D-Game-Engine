@@ -45,6 +45,7 @@ protected:
     sf::Color               m_backgroundColor  = sf::Color(100, 100, 255, 255);
     int                     m_levelWidth       = 0;
     int                     m_playerScore      = 0;
+    sf::Sound               m_sound;
     std::ofstream           m_replay_stream;
     std::map<
         size_t,

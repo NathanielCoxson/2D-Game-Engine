@@ -17,16 +17,14 @@ void Assets::addAnimation(std::string name, Animation animation) {
     animations[name] = animation;
 }
 
-void Assets::addSound(std::string name, std::string path) {
+void Assets::addSoundBuffer(std::string name, std::string path) {
     sf::SoundBuffer newSoundBuffer;
-    sf::Sound newSound;
 
     if (!newSoundBuffer.loadFromFile(path)) {
         std::cout << "Error loading sound with name: " << name << "\n";
     }
 
-    newSound.setBuffer(newSoundBuffer);
-    sounds[name] = newSound;
+    sounds[name] = newSoundBuffer;
 }
 
 void Assets::addFont(std::string name, std::string path) {
@@ -47,7 +45,7 @@ Animation& Assets::getAnimation(std::string name) {
     return animations[name];
 }
 
-const sf::Sound& Assets::getSound(std::string name) {
+const sf::SoundBuffer& Assets::getSoundBuffer(std::string name) {
     return sounds[name];
 }
 
