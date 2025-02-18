@@ -36,6 +36,10 @@ void GameEngine::init(const std::string& path) {
             std::string N, P;
             fin >> N >> P;
             m_assets.addFont(N, P);
+        } else if (asset_type == "Sound") {
+            std::string N, P;
+            fin >> N >> P;
+            m_assets.addSoundBuffer(N, P);
         } else {
             fin >> asset_type;
         }

@@ -358,6 +358,9 @@ void Scene_Play::sDoAction(const Action &action) {
                 !state.on_flagpole &&
                 cooldowns.getCooldown("ATTACK") <= 0;
             if (can_shoot) {
+                m_sound.setBuffer(m_game->assets().getSoundBuffer("Gunshot"));
+                m_sound.play();
+
                 spawnBullet();
                 m_player->getComponent<CState>().can_shoot = false;
                 cooldowns.startCooldown("ATTACK");
